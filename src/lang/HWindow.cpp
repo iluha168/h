@@ -95,10 +95,16 @@ namespace H {
                     throw std::wstring(L"wrong arguments passed for Window.geometry([Number])");
                 }
             }},
-            {L"drawPoint",[](Class::LObjects& o){
+            {L"drawPoint", [](Class::LObjects& o){
                 auto& win = rawrawWin(o[0]);
                 auto& n = rawNumber(o.at(1));
                 XDrawPoint(Global::dis, win.first, win.second, n[0], n[1]);
+                return o[0];
+            }},
+            {L"drawLine", [](Class::LObjects& o){
+                auto& win = rawrawWin(o[0]);
+                auto& n = rawNumber(o.at(1));
+                XDrawLine(Global::dis, win.first, win.second, n[0], n[1], n[2], n[3]);
                 return o[0];
             }},
             {L"foreground",[](Class::LObjects& o){
@@ -113,6 +119,10 @@ namespace H {
                     return col;
                 }
             }},
+            {L"clear", [](Class::LObjects& o){
+                XClearWindow(Global::dis, rawWin(o[0]));
+                return o[0];
+            }}
         }
     );
 }
