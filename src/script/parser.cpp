@@ -1,5 +1,5 @@
-#include "parser.h"
-#include "runner.h"
+#include "parser.hh"
+#include "runner.hh"
 #include "../global/Global.hh"
 
 namespace Parser {

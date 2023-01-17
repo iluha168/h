@@ -1,6 +1,6 @@
 #include "HClass.hh"
 #include "../global/Global.hh"
-#include "../script/runner.h"
+#include "../script/runner.hh"
 #include <math.h>
 
 namespace H {

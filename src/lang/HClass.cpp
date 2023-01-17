@@ -1,5 +1,5 @@
 #include "HClass.hh"
-#include "../script/runner.h"
+#include "../script/runner.hh"
 
 
 H::Class::Class(decltype(name) name, decltype(prototype) prototype):

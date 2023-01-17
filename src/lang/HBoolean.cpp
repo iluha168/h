@@ -1,5 +1,5 @@
 #include "HClass.hh"
-#include "../script/parser.h"
+#include "../script/parser.hh"
 
 namespace H {
     namespace /*Boolean functions*/ {

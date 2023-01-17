@@ -1,5 +1,5 @@
-#include "lexer.h"
-#include "runner.h"
+#include "lexer.hh"
+#include "runner.hh"
 #include <cwctype>
 #include <functional>
 

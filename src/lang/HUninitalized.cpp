@@ -1,5 +1,5 @@
 #include "HClass.hh"
-#include "../script/parser.h"
+#include "../script/parser.hh"
 
 namespace H {
     LClass Uninitialized = new Class(

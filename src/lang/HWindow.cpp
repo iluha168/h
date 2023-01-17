@@ -1,6 +1,6 @@
 #include "HClass.hh"
 #include "../global/Global.hh"
-#include "../script/parser.h"
+#include "../script/parser.hh"
 
 #include <X11/Xutil.h>
 

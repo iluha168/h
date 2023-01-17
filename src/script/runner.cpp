@@ -1,4 +1,4 @@
-#include "runner.h"
+#include "runner.hh"
 
 namespace Runner {
     std::vector<H::LClass> classes{};

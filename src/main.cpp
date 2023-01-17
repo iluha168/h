@@ -5,7 +5,7 @@
 
 #include "global/Global.hh"
 #include "lang/HClass.hh"
-#include "script/runner.h"
+#include "script/runner.hh"
 
 // return codes
 #define RETCODE_ERR_FILE -1
