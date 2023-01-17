@@ -6,7 +6,6 @@ H::Class::Class(decltype(name) name, decltype(prototype) prototype):
     name(name),
     prototype(prototype)
 {
-    Runner::classes.push_back(this);
 }
 
 void H::Class::addref(LObject o)

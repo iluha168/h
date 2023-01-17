@@ -29,6 +29,7 @@ std::wstring readUTF8(const char* filename)
 
 int main(int argc, char** argv) {
 	//one-time init
+	Runner::classes = {H::Window, H::Number, H::String, H::Boolean};
     H::null = H::Uninitialized->instantiate();
 	for(bool i : {false, true})
 		(H::Booleans[i] = H::Boolean->instantiate())->data = i;
