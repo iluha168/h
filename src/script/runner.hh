@@ -2,7 +2,7 @@
 #define RUNNER_H
 
 #include "../lang/HClass.hh"
-#include "parser.h"
+#include "parser.hh"
 
 namespace Runner {
     typedef std::map<std::wstring, H::Class::LObject> Entries;
