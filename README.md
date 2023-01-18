@@ -7,9 +7,8 @@ Learn more at [the wiki](https://github.com/iluha168/h/wiki).
 * Requires compiler that supports C++20 standart.
 * Assumes a running X11 server. If there aren't any, generates [segmentation fault](https://en.wikipedia.org/wiki/Segmentation_fault).
 ### Command
-Assuming CWD set to the root of this repository.
 ```sh
-gcc ./src/*.cpp ./src/*/*.cpp -o ./h -std=c++20 -pipe -O3 -Wall -Wextra -Wpedantic -lX11 -lstdc++ -lm
+cd build && make main
 ```
 ## Usage of the interpreter
 Run a script:
