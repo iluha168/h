@@ -83,14 +83,16 @@ namespace Runner {
             } return H::null;
             case Parser::SyntaxTree::ControlFlowWhile: {
                 const Parser::SyntaxTrees& subtrees = std::get<Parser::SyntaxTrees>(tree.value);
+                H::Class::LObject last = H::null;
                 try {
                     while(rawBool(execTree(subtrees[0], outerScope))){
-                        execTree(subtrees[1], outerScope);
+                        last = execTree(subtrees[1], outerScope);
                     }
                 } catch(std::bad_variant_access&){
                     throw std::wstring(L"the while statement requires a Boolean condition");
                 } catch (Exceptions::Break&){}
-            } return H::null;
+            return last;
+            }
             case Parser::SyntaxTree::ControlFlowBreak:
             throw Exceptions::Break();
             case Parser::SyntaxTree::OperationBinary: {
@@ -107,9 +109,8 @@ namespace Runner {
             }
             case Parser::SyntaxTree::ScopeRoot: {
                 //Entries localScope(outerScope);
-                execSubtrees(tree, outerScope);
+                return *(execSubtrees(tree, outerScope).end()-1);
             }
-            return H::null;
             case Parser::SyntaxTree::Variable: {
                 std::wstring& varName = rawString(std::get<H::Class::LObject>(tree.value));
                 try {
@@ -123,9 +124,9 @@ namespace Runner {
         }
     }
 
-    void run(Parser::SyntaxTree& tree, Entries& variables){
+    H::Class::LObject run(Parser::SyntaxTree& tree, Entries& variables){
         try {
-            execTree(tree, variables);
+            return execTree(tree, variables);
         } catch(std::wstring& err){
             throw L"Runner: "+err;
         } catch(Exceptions::Break&){

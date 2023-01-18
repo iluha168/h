@@ -16,7 +16,7 @@ namespace Runner {
     H::Class::LObject methodCall(H::Class::LObject, H::Class::LObjects&, H::LClass);
 
     H::Class::LObject execTree(const Parser::SyntaxTree&, Entries&);
-    void run(Parser::SyntaxTree&, Entries&);
+    H::Class::LObject run(Parser::SyntaxTree&, Entries&);
 
     namespace Exceptions {
         class Break{};

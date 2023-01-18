@@ -15,3 +15,7 @@ Run a script:
 ```sh
 h /PATH/TO/script.wh
 ```
+Enter REPL:
+```sh
+h
+```

@@ -36,8 +36,25 @@ int main(int argc, char** argv) {
 	srand(time(nullptr));
 	// read cmd arguments
 	switch(argc){
-		case 1:
-		return RETCODE_SUCCESS;
+		case 1: {
+			std::wcout << L"h REPL - Hit Ctrl+C to exit" << std::endl;
+			H::Class::LObject toString = Parser::HStringFromWString(L"toString");
+			while(true){
+				std::wcout << L"> " << std::flush;
+				std::wstring code{};
+				std::wcin >> code;
+
+				auto tokens = Lexer::tokenize(code);
+				auto tree = Parser::syntaxTreeFor(tokens);
+				Runner::Entries globalScope{};
+				try {
+					H::Class::LObjects result = {Runner::run(tree, globalScope)};
+					std::wcout << rawString(Runner::methodCall(toString, result, result[0]->parent)) << std::endl;
+				} catch(std::wstring& e){
+					std::wcerr << e << std::endl;
+				}
+			}
+		} return RETCODE_SUCCESS;
 		case 2:
 			// run script
 			try {
