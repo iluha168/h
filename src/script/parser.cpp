@@ -150,6 +150,10 @@ namespace Parser {
                                 condition, parseExpression(pos, tokens)
                             })
                         };
+                        if(tokens[pos].type == Lexer::Token::Reserved && tokens[pos].value == L"else")
+                            std::get<Parser::SyntaxTrees>(tempTree.value).push_back(
+                                parseExpression(++pos, tokens)
+                            );
                     } break;
                     case 6: //break
                         tempTree = {

@@ -90,7 +90,10 @@ namespace Runner {
                     }
                 } catch(std::bad_variant_access&){
                     throw std::wstring(L"the while statement requires a Boolean condition");
-                } catch (Exceptions::Break&){}
+                } catch (Exceptions::Break&){
+                    if(subtrees.size() > 2)
+                        return execTree(subtrees[2], outerScope);
+                }
             return last;
             }
             case Parser::SyntaxTree::ControlFlowBreak:
