@@ -109,7 +109,8 @@ namespace Runner {
             }
             case Parser::SyntaxTree::ScopeRoot: {
                 //Entries localScope(outerScope);
-                return *(execSubtrees(tree, outerScope).end()-1);
+                auto result = execSubtrees(tree, outerScope);
+                return (result.size()? (*(result.end()-1)) : H::null);
             }
             case Parser::SyntaxTree::Variable: {
                 std::wstring& varName = rawString(std::get<H::Class::LObject>(tree.value));

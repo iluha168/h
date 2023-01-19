@@ -39,15 +39,12 @@ int main(int argc, char** argv) {
 		case 1: {
 			std::wcout << L"h REPL - Hit Ctrl+C to exit" << std::endl;
 			H::Class::LObject toString = Parser::HStringFromWString(L"toString");
-			while(true){
-				std::wcout << L"> " << std::flush;
-				std::wstring code{};
-				std::wcin >> code;
-
-				auto tokens = Lexer::tokenize(code);
-				auto tree = Parser::syntaxTreeFor(tokens);
-				Runner::Entries globalScope{};
+			std::wstring code{};
+			while(std::wcout<<L"> "<<std::flush, std::getline(std::wcin, code)){
 				try {
+					auto tokens = Lexer::tokenize(code);
+					auto tree = Parser::syntaxTreeFor(tokens);
+					Runner::Entries globalScope{};
 					H::Class::LObjects result = {Runner::run(tree, globalScope)};
 					std::wcout << rawString(Runner::methodCall(toString, result, result[0]->parent)) << std::endl;
 				} catch(std::wstring& e){
