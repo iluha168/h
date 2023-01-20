@@ -10,6 +10,7 @@ namespace Parser {
         L"OperationAssign",
         L"ControlFlowIf",
         L"ControlFlowWhile",
+        L"ControlFlowFor",
         L"ControlFlowBreak",
         L"Variable",
         L"Constant",
@@ -130,10 +131,6 @@ namespace Parser {
                                 condition, parseExpression(pos, tokens)
                             })
                         };
-                        if(tokens[pos].type == Lexer::Token::Reserved && tokens[pos].value == L"else")
-                            std::get<Parser::SyntaxTrees>(tempTree.value).push_back(
-                                parseExpression(++pos, tokens)
-                            );
                     } break;
                     case 2: //else
                     throw std::wstring(L"else without previous if");
@@ -150,10 +147,6 @@ namespace Parser {
                                 condition, parseExpression(pos, tokens)
                             })
                         };
-                        if(tokens[pos].type == Lexer::Token::Reserved && tokens[pos].value == L"else")
-                            std::get<Parser::SyntaxTrees>(tempTree.value).push_back(
-                                parseExpression(++pos, tokens)
-                            );
                     } break;
                     case 6: //break
                         tempTree = {
@@ -162,8 +155,29 @@ namespace Parser {
                         };
                         pos++;
                     break;
+                    case 7: //for
+                        pos++;
+                        tempTree = {
+                            SyntaxTree::ControlFlowFor,
+                            SyntaxTrees()
+                        };
+                        for(uint8_t i = 0; i < 4; i++)
+                            std::get<SyntaxTrees>(tempTree.value).push_back(
+                                parseExpression(pos, tokens)
+                            );
+                    break;
                     default:
                     goto expected_expression;
+                }
+                // Add optional else branch
+                switch(reservedWordIndex){
+                    case 1: //if
+                    case 5: //while
+                    case 7: //for
+                    if(tokens[pos].type == Lexer::Token::Reserved && tokens[pos].value == L"else")
+                        std::get<SyntaxTrees>(tempTree.value).push_back(
+                            parseExpression(++pos, tokens)
+                        );
                 }
             } break;
             case Lexer::Token::Sign:

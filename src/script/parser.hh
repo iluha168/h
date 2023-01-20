@@ -17,6 +17,7 @@ namespace Parser {
             OperationAssign,
             ControlFlowIf,
             ControlFlowWhile,
+            ControlFlowFor,
             ControlFlowBreak,
             Variable,
             Constant,

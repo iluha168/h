@@ -96,6 +96,23 @@ namespace Runner {
                 }
             return last;
             }
+            case Parser::SyntaxTree::ControlFlowFor: {
+                const Parser::SyntaxTrees& subtrees = std::get<Parser::SyntaxTrees>(tree.value);
+                H::Class::LObject last = H::null;
+                try {
+                    for(       execTree(subtrees[0], outerScope);
+                       rawBool(execTree(subtrees[1], outerScope));
+                               execTree(subtrees[2], outerScope)){
+                        last = execTree(subtrees[3], outerScope);
+                    }
+                } catch(std::bad_variant_access&){
+                    throw std::wstring(L"the for statement requires a Boolean condition");
+                } catch (Exceptions::Break&){
+                    if(subtrees.size() > 4)
+                        return execTree(subtrees[4], outerScope);
+                }
+            return last;
+            }
             case Parser::SyntaxTree::ControlFlowBreak:
             throw Exceptions::Break();
             case Parser::SyntaxTree::OperationBinary: {

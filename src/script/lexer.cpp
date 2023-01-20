@@ -6,7 +6,7 @@
 namespace Lexer {
     const std::vector<std::wstring> reserved_words({
         //don't change order
-        L"new", L"if", L"else", L"true", L"false", L"while", L"break"
+        L"new", L"if", L"else", L"true", L"false", L"while", L"break", L"for"
     });
     extern const std::wstring tokenTypes[] = {
         L"Number",
