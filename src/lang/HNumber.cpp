@@ -25,11 +25,12 @@ namespace H {
             return result;
         }
         Quaternion mul(Quaternion& q1, Quaternion& q2){
+            using std::fma;
             return {
-                q1[0]*q2[0]-q1[1]*q2[1]-q1[2]*q2[2]-q1[3]*q2[3],
-                q1[0]*q2[1]+q1[1]*q2[0]+q1[2]*q2[3]-q1[3]*q2[2],
-                q1[0]*q2[2]-q1[1]*q2[3]+q1[2]*q2[0]+q1[3]*q2[1],
-                q1[0]*q2[3]+q1[1]*q2[2]-q1[2]*q2[1]+q1[3]*q2[0]
+                fma(q1[0], q2[0], -fma(q1[1], q2[1], fma(q1[2],q2[2],  q1[3]*q2[3]))),
+                fma(q1[0], q2[1],  fma(q1[1], q2[0], fma(q1[2],q2[3], -q1[3]*q2[2]))),
+                fma(q1[0], q2[2], fma(-q1[1], q2[3], fma(q1[2],q2[0],  q1[3]*q2[1]))),
+                fma(q1[0], q2[3],  fma(q1[1], q2[2], fma(-q1[2],q2[1], q1[3]*q2[0])))
             };
         }
         Quaternion mul(Quaternion q, Quaternion::value_type scalar){
