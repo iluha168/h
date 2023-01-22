@@ -12,6 +12,13 @@ namespace H {
             int x, y;
             unsigned width, height, border, depth;
         };
+        std::string WStringToString(std::wstring wstr){
+            char* c = new char[wstr.length()*sizeof(wchar_t)+1];
+            c[std::wcstombs(c, wstr.c_str(), wstr.length())] = 0;
+            std::string str(c);
+            delete[] c;
+            return str;
+        }
         WGeometry getGeometry(Class::LObject& o){
             WGeometry tmp;
 	        XGetGeometry(Global::dis, rawWin(o), &tmp.root, &tmp.x, &tmp.y, &tmp.width, &tmp.height, &tmp.border, &tmp.depth);
@@ -53,11 +60,12 @@ namespace H {
                     geom[0],geom[1], geom[2],geom[3], 1,
                     0, RGBA(255,255,255,255)
                 );
+               {XSizeHints size;
+                size.flags = PPosition|PSize;
+                size.x      = geom[0]; size.y     = geom[1];
+                size.height = geom[2]; size.width = geom[3];
 	            XSetWMProtocols(Global::dis, w.first, &Global::wmDeleteWindow, 1);
-                char* title = new char[rawString(o.at(2)).length()*sizeof(wchar_t)+1];
-                title[std::wcstombs(title, rawString(o[2]).c_str(), rawString(o[2]).length())] = 0;
-	            XSetStandardProperties(Global::dis, w.first, title,"HIconName", None, NULL,0,NULL);
-                delete[] title;
+                XSetStandardProperties(Global::dis, w.first, WStringToString(rawString(o.at(2))).c_str(),"HIconName", None, NULL,0,&size);}
 	            XSelectInput(Global::dis, w.first, 0b111111111111111111111111L);
 	            XMapRaised(Global::dis, w.first);
                 w.second = XCreateGC(Global::dis, w.first, 0,0);
