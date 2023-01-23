@@ -29,6 +29,7 @@ std::wstring readUTF8(const char* filename)
 
 int main(int argc, char** argv) {
 	//one-time init
+	Runner::Entries globalScope{};
 	Runner::classes = {H::Window, H::Number, H::String, H::Boolean};
     H::null = H::Uninitialized->instantiate();
 	for(bool i : {false, true})
@@ -44,7 +45,6 @@ int main(int argc, char** argv) {
 				try {
 					auto tokens = Lexer::tokenize(code);
 					auto tree = Parser::syntaxTreeFor(tokens);
-					Runner::Entries globalScope{};
 					H::Class::LObjects result = {Runner::run(tree, globalScope)};
 					std::wcout << rawString(Runner::methodCall(toString, result, result[0]->parent)) << std::endl;
 				} catch(std::wstring& e){

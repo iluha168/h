@@ -126,12 +126,17 @@ namespace H {
                 return HNumberFromQuaternion(square(rawNumber(q[0])));
             }},
 
+            {L"random", [](Class::LObjects& q){
+                Class::LObject n = Number->instantiate();
+                rawNumber(n)[0] = double(rand())/double(RAND_MAX);
+                return n;
+            }},
+
             {L"[]", [](Class::LObjects& i){
                 Class::LObject n = Number->instantiate();
                 n->data = Quaternion({rawNumber(i[0])[rawNumber(i[1])[0]],0,0,0});
                 return n;
             }},
-
             //comparison functions ignore any complex parts, because complexes "is not an ordered field"
             //https://en.wikipedia.org/wiki/Complex_number#Field_structure
             {L"<", [](Class::LObjects& op){
