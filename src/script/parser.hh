@@ -1,8 +1,9 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef PARSER_HH
+#define PARSER_HH
 
 #include "lexer.hh"
-#include "../lang/HClass.hh"
+#include "../lang/HClassDecls.hh"
+#include <variant>
 
 namespace Parser {
     extern const std::wstring treeTypes[];
@@ -23,11 +24,10 @@ namespace Parser {
             Constant,
             CallMethod,
         } type;
-        std::variant<H::Class::LObject, SyntaxTrees> value;
+        std::variant<H::LObject, SyntaxTrees> value;
     };
 
     //helpers
-    H::Class::LObject HStringFromWString(std::wstring);
     SyntaxTree treeForString(std::wstring);
     SyntaxTree parseNumber(size_t&, std::vector<Lexer::Token>&);
     std::vector<SyntaxTree> parseCallArguments(size_t&, std::vector<Lexer::Token>&, bool);

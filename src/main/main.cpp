@@ -29,7 +29,6 @@ std::wstring readUTF8(const char* filename)
 
 int main(int argc, char** argv) {
 	//one-time init
-	Runner::Entries globalScope{};
 	Runner::classes = {H::Window, H::Number, H::String, H::Boolean, H::Array};
     H::null = H::Uninitialized->instantiate();
 	for(bool i : {false, true})
@@ -39,13 +38,13 @@ int main(int argc, char** argv) {
 	switch(argc){
 		case 1: {
 			std::wcout << L"h REPL - Hit Ctrl+C to exit" << std::endl;
-			H::Class::LObject toString = Parser::HStringFromWString(L"toString");
+			H::LObject toString = H::HStringFromString(L"toString");
 			std::wstring code{};
 			while(std::wcout<<L"> "<<std::flush, std::getline(std::wcin, code)){
 				try {
 					auto tokens = Lexer::tokenize(code);
 					auto tree = Parser::syntaxTreeFor(tokens);
-					H::Class::LObjects result = {Runner::run(tree, globalScope)};
+					H::LObjects result = {Runner::run(tree, Global::Scope)};
 					std::wcout << rawString(Runner::methodCall(toString, result, result[0]->parent)) << std::endl;
 				} catch(std::wstring& e){
 					std::wcerr << e << std::endl;
@@ -84,7 +83,7 @@ int main(int argc, char** argv) {
 				//find and destroy window
 				if((Atom)event.xclient.data.l[0] == Global::wmDeleteWindow){
 					auto it = std::find_if(H::Class::refs.begin(), H::Class::refs.end(),
-						[&event](H::Class::LObject& w){
+						[&event](H::LObject& w){
 							try {
 								return rawWin(w) == event.xclient.window;
 							} catch(...) {return false;}
@@ -94,6 +93,9 @@ int main(int argc, char** argv) {
 					H::Class::unref(*it);
 				}
 			break;
+			case Expose:
+			break;
+				XFlush(Global::dis);
 			default:
 				//std::wcout << L"Event type: " << event.type << std::endl;
 			break;

@@ -17,7 +17,7 @@ void H::Class::unref(LObject o)
     refs.erase(std::find(refs.begin(), refs.end(), o));
 }
 
-H::Class::LObject H::Class::instantiate(LObjects args)
+H::LObject H::Class::instantiate(LObjects args)
 {
     LObject o(new Object(this),
         [](Object* o_delete){
@@ -44,19 +44,25 @@ H::Class::~Class(){
     std::remove(Runner::classes.begin(), Runner::classes.end(), this);
 }
 
-H::Class::Object::Object(decltype(parent) parent):
+H::Object::Object(decltype(parent) parent):
     parent(parent)
 {
 }
 
 namespace H {
-    Class::LObjects Class::refs{};
+    LObjects Class::refs{};
 
     //does nothing
-    Class::Function emptyF = [](H::Class::LObjects& o){
+    NativeFunction emptyF = [](LObjects& o){
         return o[0];
     };
+    
+    LObject HStringFromString(std::wstring native){
+        LObject str = String->instantiate();
+        str->data = native;
+        return str;
+    }
 
-    Class::LObject null(nullptr);
-    Class::LObject Booleans[2]{};
+    LObject null(nullptr);
+    LObject Booleans[2]{};
 }

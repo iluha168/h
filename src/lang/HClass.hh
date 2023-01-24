@@ -5,64 +5,47 @@
 #include <string>
 #include <sstream>
 #include <map>
-#include <vector>
-#include <memory>
 #include <iostream>
 #include <variant>
 
+#include "HClassDecls.hh"
+
 namespace H {
-    class Class;
-    typedef Class* LClass;
+    class Object {
+    public:
+        Class* parent;
+        Object(decltype(parent));
+        
+        // native data of object
+        std::variant<\
+            Quaternion, // for H::Number
+            std::pair<::Window, ::GC>, // for H::Window
+            std::wstring, // for H::String
+            bool, //for H::Boolean
+            LObjects //for H::Array
+            #define rawNumber(var) (std::get<std::array<double,4>>(var->data))
+            #define rawrawWin(var) (std::get<std::pair<::Window, ::GC>>(var->data))
+            #define rawWin(var) (rawrawWin(var).first)
+            #define rawGC(var) (rawrawWin(var).second)
+            #define rawString(var) (std::get<std::wstring>(var->data))
+            #define rawBool(var) (std::get<bool>(var->data))
+            #define rawArray(var) (std::get<H::LObjects>(var->data))
+        > data;
+    };
 
     class Class {
-        class Object;
     public:
-        typedef std::shared_ptr<Object> LObject;
-        typedef std::vector<LObject> LObjects;
-        typedef LObject(*Function)(LObjects&);
-
         static LObjects refs;
         static void addref(LObject);
         static void unref(LObject);
-    private:
-
-        class Object {
-        public:
-            Class* parent;
-            Object(decltype(parent));
-            
-            // native data of object
-            std::variant<\
-                std::array<double,4>, // for H::Number
-                std::pair<::Window, ::GC>, // for H::Window
-                std::wstring, // for H::String
-                bool, //for H::Boolean
-                LObjects
-                #define rawNumber(var) (std::get<std::array<double,4>>(var->data))
-                #define rawrawWin(var) (std::get<std::pair<::Window, ::GC>>(var->data))
-                #define rawWin(var) (rawrawWin(var).first)
-                #define rawGC(var) (rawrawWin(var).second)
-                #define rawString(var) (std::get<std::wstring>(var->data))
-                #define rawBool(var) (std::get<bool>(var->data))
-                #define rawArray(var) (std::get<H::Class::LObjects>(var->data))
-            > data;
-        };
     public:
         std::wstring name;
-        std::map<std::wstring, Function> prototype;
+        std::map<std::wstring, NativeFunction> prototype;
 
         Class(decltype(name), decltype(prototype));
         LObject instantiate(LObjects = {});
         ~Class();
     };
-
-    extern Class::Function emptyF;
-    extern Class::LObject null;
-
-    //Index 0 - false, index 1 - true
-    extern Class::LObject Booleans[2];
-
-    extern LClass Number, Window, String, Uninitialized, Boolean, Array;
 }
 
 #endif

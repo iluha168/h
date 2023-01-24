@@ -1,6 +1,7 @@
 #include "parser.hh"
 #include "runner.hh"
 #include "../global/Global.hh"
+#include "../lang/HClass.hh"
 
 namespace Parser {
     const std::wstring treeTypes[] = {
@@ -17,11 +18,6 @@ namespace Parser {
         L"CallMethod",
     };
     
-    H::Class::LObject HStringFromWString(std::wstring native){
-        H::Class::LObject str = H::String->instantiate();
-        str->data = native;
-        return str;
-    }
     SyntaxTrees treesConcat(SyntaxTrees t1, SyntaxTrees t2){
         t1.insert(t1.end(), t2.begin(), t2.end());
         return t1;
@@ -29,17 +25,17 @@ namespace Parser {
     SyntaxTree treeForVariable(std::wstring name){
         return {
             SyntaxTree::Variable,
-            HStringFromWString(name),
+            H::HStringFromString(name),
         };
     }
-    SyntaxTree treeForConstant(H::Class::LObject o){
+    SyntaxTree treeForConstant(H::LObject o){
         return {
             SyntaxTree::Constant,
             o
         };
     }
     SyntaxTree treeForString(std::wstring str){
-        return treeForConstant(HStringFromWString(str));
+        return treeForConstant(H::HStringFromString(str));
     }
     SyntaxTree treeForOperation(std::wstring op, SyntaxTrees operands){
         return {
@@ -52,7 +48,7 @@ namespace Parser {
     }
 
     SyntaxTree parseNumber(size_t& pos, Lexer::Tokens& tokens){
-        H::Class::LObject number = H::Number->instantiate();
+        H::LObject number = H::Number->instantiate();
         const auto& helper = [&]{
             double tmp = 1, ijk = 0;
             if(tokens[pos  ].type == Lexer::Token::Sign &&
@@ -330,8 +326,8 @@ namespace Parser {
             std::wcout << L'~';
         std::wcout << L' ';
 
-        if(std::holds_alternative<H::Class::LObject>(tree.value)){
-            H::Class::LObjects o = {std::get<H::Class::LObject>(tree.value)};
+        if(std::holds_alternative<H::LObject>(tree.value)){
+            H::LObjects o = {std::get<H::LObject>(tree.value)};
             std::wcout << rawString(Runner::methodCall(L"toString", o, o[0]->parent)) << std::endl;
             return;
         }

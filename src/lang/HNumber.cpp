@@ -5,9 +5,8 @@
 
 namespace H {
     namespace /*Number functions*/ {
-        typedef std::array<double,4> Quaternion;
-        Class::LObject HNumberFromQuaternion(Quaternion q){
-            Class::LObject result = Number->instantiate();
+        LObject HNumberFromQuaternion(Quaternion q){
+            LObject result = Number->instantiate();
             result->data = q;
             return result;
         }
@@ -74,14 +73,14 @@ namespace H {
     LClass Number = new Class(
         L"Number",
         {
-            {L"constructor", [](Class::LObjects& o){
+            {L"constructor", [](LObjects& o){
                 o[0]->data = std::array<double,4>{};
                 return null;
             }},
 		    {L"destructor", emptyF},
-            {L"toString", [](Class::LObjects& nn){
+            {L"toString", [](LObjects& nn){
                 std::wstringstream ss;
-                for(Class::LObject& n : nn){
+                for(LObject& n : nn){
                     auto& v = rawNumber(n);
                     for(uint8_t i = 0; i < 4; i++){
                         ss << (i? std::showpos : std::noshowpos);
@@ -89,60 +88,60 @@ namespace H {
                     }
                 }
                 if(ss.str().length() == 0) ss << L"0";
-                return Parser::HStringFromWString(ss.str());
+                return H::HStringFromString(ss.str());
             }},
-            {L"+", [](Class::LObjects& nn){
-                Class::LObject result = Number->instantiate();
+            {L"+", [](LObjects& nn){
+                LObject result = Number->instantiate();
                 Quaternion& nativeResult = rawNumber(result);
-                for(Class::LObject& n : nn)
+                for(LObject& n : nn)
                     nativeResult = sum(nativeResult, rawNumber(n));
                 return result;
             }},
-            {L"-", [](Class::LObjects& nn){
+            {L"-", [](LObjects& nn){
                 return HNumberFromQuaternion(sub(rawNumber(nn.at(0)), rawNumber(nn.at(1))));
             }},
-            {L"*", [](Class::LObjects& nn){
+            {L"*", [](LObjects& nn){
                 return HNumberFromQuaternion(mul(rawNumber(nn.at(0)), rawNumber(nn.at(1))));
             }},
-            {L"absSq", [](Class::LObjects& q){
+            {L"absSq", [](LObjects& q){
                 return HNumberFromQuaternion(absSq(rawNumber(q[0])));
             }},
-            {L"abs", [](Class::LObjects& q){
+            {L"abs", [](LObjects& q){
                 return HNumberFromQuaternion(abs  (rawNumber(q[0])));
             }},
-            {L"conjugate", [](Class::LObjects& q){
+            {L"conjugate", [](LObjects& q){
                 return HNumberFromQuaternion(conjugate(rawNumber(q[0])));
             }},
-            {L"normalize", [](Class::LObjects& q){
+            {L"normalize", [](LObjects& q){
                 return HNumberFromQuaternion(unit(rawNumber(q[0])));
             }},
-            {L"reciprocal", [](Class::LObjects& q){
+            {L"reciprocal", [](LObjects& q){
                 return HNumberFromQuaternion(reciprocal(rawNumber(q[0])));
             }},
-            {L"exp", [](Class::LObjects& q){
+            {L"exp", [](LObjects& q){
                 return HNumberFromQuaternion(exp(rawNumber(q[0])));
             }},
-            {L"sq", [](Class::LObjects& q){
+            {L"sq", [](LObjects& q){
                 return HNumberFromQuaternion(square(rawNumber(q[0])));
             }},
 
-            {L"random", [](Class::LObjects&){
-                Class::LObject n = Number->instantiate();
+            {L"random", [](LObjects&){
+                LObject n = Number->instantiate();
                 rawNumber(n)[0] = double(rand())/double(RAND_MAX);
                 return n;
             }},
 
-            {L"[]", [](Class::LObjects& i){
-                Class::LObject n = Number->instantiate();
+            {L"[]", [](LObjects& i){
+                LObject n = Number->instantiate();
                 n->data = Quaternion({rawNumber(i[0])[rawNumber(i[1])[0]],0,0,0});
                 return n;
             }},
             //comparison functions ignore any complex parts, because complexes "is not an ordered field"
             //https://en.wikipedia.org/wiki/Complex_number#Field_structure
-            {L"<", [](Class::LObjects& op){
+            {L"<", [](LObjects& op){
                 return Booleans[rawNumber(op.at(0))[0] < rawNumber(op.at(1))[0]];
             }},
-            {L">", [](Class::LObjects& op){
+            {L">", [](LObjects& op){
                 return Booleans[rawNumber(op.at(0))[0] > rawNumber(op.at(1))[0]];
             }}
         }

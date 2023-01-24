@@ -1,5 +1,4 @@
 #include "HClass.hh"
-#include "../script/parser.hh"
 
 namespace H {
     LClass Uninitialized = new Class(
@@ -7,8 +6,8 @@ namespace H {
         {
             {L"constructor", emptyF},
 		    {L"destructor", emptyF},
-            {L"toString", [](Class::LObjects&){
-                return Parser::HStringFromWString(Uninitialized->name);
+            {L"toString", [](LObjects&){
+                return H::HStringFromString(Uninitialized->name);
             }}
         }
     );

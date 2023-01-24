@@ -1,6 +1,5 @@
 #include "HClass.hh"
 #include "../global/Global.hh"
-#include "../script/parser.hh"
 
 #include <X11/Xutil.h>
 
@@ -19,7 +18,7 @@ namespace H {
             delete[] c;
             return str;
         }
-        WGeometry getGeometry(Class::LObject& o){
+        WGeometry getGeometry(LObject& o){
             WGeometry tmp;
 	        XGetGeometry(Global::dis, rawWin(o), &tmp.root, &tmp.x, &tmp.y, &tmp.width, &tmp.height, &tmp.border, &tmp.depth);
 	        return tmp;
@@ -52,7 +51,7 @@ namespace H {
     LClass Window = new Class(
         L"Window",
         {
-            {L"constructor", [](Class::LObjects& o){
+            {L"constructor", [](LObjects& o){
                 std::pair<::Window, ::GC> w;
                 auto& geom = rawNumber(o.at(1));
                 w.first = XCreateSimpleWindow(
@@ -73,28 +72,28 @@ namespace H {
                 Class::addref(o[0]);
 			    return null;
 		    }},
-		    {L"destructor", [](Class::LObjects& o){
+		    {L"destructor", [](LObjects& o){
                 auto& w = rawrawWin(o.at(0));
 	            XFreeGC(Global::dis, w.second);
 	            XDestroyWindow(Global::dis, w.first);
                 return null;
             }},
-            {L"toString", [](Class::LObjects& o){
+            {L"toString", [](LObjects& o){
                 std::wstringstream ss;
-                for(Class::LObject& n : o){
+                for(LObject& n : o){
                     auto& info = rawrawWin(n);
                     ss << L"Window"<<info.first<<L'.'<<info.second;
                 }
-                return Parser::HStringFromWString(ss.str());
+                return H::HStringFromString(ss.str());
             }},
-            {L"geometry", [](Class::LObjects& o){
+            {L"geometry", [](LObjects& o){
                 try {
                     auto& geom = rawNumber(o.at(1));
                     XMoveResizeWindow(Global::dis, rawWin(o.at(0)), geom[0], geom[1], geom[2], geom[3]);
                     return null;
                 } catch (std::out_of_range&){
                     WGeometry geom = getGeometry(o.at(0));
-                    Class::LObject q = Number->instantiate();
+                    LObject q = Number->instantiate();
                     auto& v = rawNumber(q);
                     v[0] = geom.x;     v[1] = geom.y;
                     v[2] = geom.width; v[3] = geom.height;
@@ -103,31 +102,31 @@ namespace H {
                     throw std::wstring(L"wrong arguments passed for Window.geometry([Number])");
                 }
             }},
-            {L"drawPoint", [](Class::LObjects& o){
+            {L"drawPoint", [](LObjects& o){
                 auto& win = rawrawWin(o[0]);
                 auto& n = rawNumber(o.at(1));
                 XDrawPoint(Global::dis, win.first, win.second, n[0], n[1]);
                 return o[0];
             }},
-            {L"drawLine", [](Class::LObjects& o){
+            {L"drawLine", [](LObjects& o){
                 auto& win = rawrawWin(o[0]);
                 auto& n = rawNumber(o.at(1));
                 XDrawLine(Global::dis, win.first, win.second, n[0], n[1], n[2], n[3]);
                 return o[0];
             }},
-            {L"foreground",[](Class::LObjects& o){
+            {L"foreground",[](LObjects& o){
                 GC& gc = rawrawWin(o[0]).second;
                 try {
                     auto& c = rawNumber(o.at(1));
                     XSetForeground(Global::dis, gc, RGBA(c[0],c[1],c[2],c[3]));
                     return o[0];
                 } catch(std::out_of_range&){
-                    Class::LObject col = Number->instantiate();
+                    LObject col = Number->instantiate();
                     col->data = unRGBA(WinGetGCValues(gc, GCForeground).foreground);
                     return col;
                 }
             }},
-            {L"clear", [](Class::LObjects& o){
+            {L"clear", [](LObjects& o){
                 XClearWindow(Global::dis, rawWin(o[0]));
                 return o[0];
             }}
