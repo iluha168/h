@@ -13,7 +13,9 @@ namespace H {
                 return null;
             }},
 		    {L"destructor", emptyF},
-            {L"toString", emptyF},
+            {L"toString", [](LObjects& o){
+                return H::HStringFromString(L'"'+rawString(o[0])+L'"');
+            }},
             {L"log", [](LObjects& strs){
                 for(LObject& str : strs)
                     std::wcout << rawString(str);
