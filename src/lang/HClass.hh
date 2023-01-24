@@ -36,13 +36,15 @@ namespace H {
                 std::array<double,4>, // for H::Number
                 std::pair<::Window, ::GC>, // for H::Window
                 std::wstring, // for H::String
-                bool //for H::Boolean
+                bool, //for H::Boolean
+                LObjects
                 #define rawNumber(var) (std::get<std::array<double,4>>(var->data))
                 #define rawrawWin(var) (std::get<std::pair<::Window, ::GC>>(var->data))
                 #define rawWin(var) (rawrawWin(var).first)
                 #define rawGC(var) (rawrawWin(var).second)
                 #define rawString(var) (std::get<std::wstring>(var->data))
                 #define rawBool(var) (std::get<bool>(var->data))
+                #define rawArray(var) (std::get<H::Class::LObjects>(var->data))
             > data;
         };
     public:
@@ -60,7 +62,7 @@ namespace H {
     //Index 0 - false, index 1 - true
     extern Class::LObject Booleans[2];
 
-    extern LClass Number, Window, String, Uninitialized, Boolean;
+    extern LClass Number, Window, String, Uninitialized, Boolean, Array;
 }
 
 #endif

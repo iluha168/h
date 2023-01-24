@@ -126,7 +126,7 @@ namespace H {
                 return HNumberFromQuaternion(square(rawNumber(q[0])));
             }},
 
-            {L"random", [](Class::LObjects& q){
+            {L"random", [](Class::LObjects&){
                 Class::LObject n = Number->instantiate();
                 rawNumber(n)[0] = double(rand())/double(RAND_MAX);
                 return n;

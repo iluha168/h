@@ -80,28 +80,30 @@ namespace Parser {
         return treeForConstant(number);
     }
     
+    SyntaxTrees parseList(size_t& pos, Lexer::Tokens& tokens, const wchar_t separator, const wchar_t end){
+        SyntaxTrees args = {};
+        for(;;){
+            pos++;
+            if(tokens[pos].type == Lexer::Token::Punct
+            && tokens[pos].value[0] == end){
+                    pos++;
+                    return args;
+            }
+            args.push_back(parseExpression(pos, tokens));
+            if(tokens[pos].type == Lexer::Token::Punct){
+                const wchar_t punct = tokens[pos].value[0];
+                     if(punct == end) pos--;
+                else if(punct == separator) continue;
+                else throw std::wstring(L"expected")+separator+L" or "+end+L" in call arguments.";
+            }
+            else throw std::wstring(L"expected Punct.");
+        }
+        return args;
+    }
+
     SyntaxTrees parseCallArguments(size_t& pos, Lexer::Tokens& tokens, bool optional = false){
         if(tokens[pos].type == Lexer::Token::Punct && tokens[pos].value[0] == L'('){
-            SyntaxTrees args = {};
-            for(;;){
-                pos++;
-                if(tokens[pos].type == Lexer::Token::Punct
-                && tokens[pos].value[0] == L')'){
-                        pos++;
-                        return args;
-                }
-                args.push_back(parseExpression(pos, tokens));
-                if(tokens[pos].type == Lexer::Token::Punct)
-                    switch(tokens[pos].value[0]){
-                        case L')':
-                            pos--;
-                        case L',':
-                        continue;
-                        default:
-                        throw std::wstring(L"expected ',' or ')' in call arguments.");
-                }
-                else throw std::wstring(L"expected Punct.");
-            }
+            return parseList(pos, tokens, L',', L')');
         } else {
             if(optional) return {};
             throw std::wstring(L"expected call arguments.");
@@ -205,6 +207,14 @@ namespace Parser {
                         throw std::wstring(L"unmatched parentheses ')'");
                     pos++;
                 break;
+                case L'[':
+                    tempTree = {SyntaxTree::OperationNew,
+                        treesConcat(
+                            {treeForString(L"Array")},
+                            parseList(pos, tokens, L',', L']')
+                        )
+                    };
+                break;
                 default:
                 goto expected_expression;
                 }
@@ -237,6 +247,9 @@ namespace Parser {
                         })
                     };
                 } break;
+                case L';':
+                    pos++;
+                return tempTree;
                 case L'[':
                     tempTree = {
                         SyntaxTree::CallMethod,

@@ -30,7 +30,7 @@ std::wstring readUTF8(const char* filename)
 int main(int argc, char** argv) {
 	//one-time init
 	Runner::Entries globalScope{};
-	Runner::classes = {H::Window, H::Number, H::String, H::Boolean};
+	Runner::classes = {H::Window, H::Number, H::String, H::Boolean, H::Array};
     H::null = H::Uninitialized->instantiate();
 	for(bool i : {false, true})
 		(H::Booleans[i] = H::Boolean->instantiate())->data = i;
@@ -56,11 +56,11 @@ int main(int argc, char** argv) {
 			// run script
 			try {
 				Lexer::Tokens tokens = Lexer::tokenize(readUTF8(argv[1]));
-				// for(size_t i = 0; i < tokens.size(); i++){
-				// 	std::wcout << i << " " << Lexer::tokenTypes[tokens[i].type] << L" | " << tokens[i].value << std::endl;
-				// }
+				for(size_t i = 0; i < tokens.size(); i++){
+					std::wcout << i << " " << Lexer::tokenTypes[tokens[i].type] << L" | " << tokens[i].value << std::endl;
+				}
 				Parser::SyntaxTree tree = Parser::syntaxTreeFor(tokens);
-				// Parser::logTree(tree);
+				Parser::logTree(tree);
 				Runner::Entries globalScope{};
 				Runner::run(tree, globalScope);
 			} catch (std::exception& e) {
