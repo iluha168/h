@@ -2,10 +2,10 @@
 #define GLBOAL_HH
 
 #include <X11/Xlib.h>
-#include "../script/runner.hh"
+#include "../lang/HClassDecls.hh"
 
 namespace Global {
-	extern Runner::Entries Scope;
+	extern H::Entries Scope;
     extern Display* dis;
     extern Atom wmDeleteWindow;
     extern Screen* scr;

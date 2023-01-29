@@ -1,14 +1,19 @@
 #include "HClass.hh"
 
 namespace H {
-    LClass Uninitialized = new Class(
-        L"Uninitialized",
-        {
-            {L"constructor", emptyF},
-		    {L"destructor", emptyF},
-            {L"toString", [](LObjects&){
-                return H::HStringFromString(Uninitialized->name);
-            }}
-        }
-    );
+    Proto UninitializedProto = {
+        {L"constructor", emptyF},
+		{L"destructor", emptyF},
+        {L"toString", [](LObjects&){
+            return H::HStringFromString(L"null");
+        }}
+    };
+
+    Proto UninitializedClassProto = {
+        {L"$new", [](LObjects& o){
+            o[0]->prototype = UninitializedProto;
+            return null;
+        }},
+    };
+    LObject Uninitialized = LObject(new Object(UninitializedClassProto));
 }

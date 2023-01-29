@@ -1,52 +1,30 @@
 #include "runner.hh"
+#include "../lang/HClass.hh"
 
 namespace Runner {
-    std::vector<H::LClass> classes{};
-
-    H::LClass getClassByName(std::wstring className){
-        for(H::LClass lclass : classes){
-            if(lclass->name == className)
-                return lclass;
-        }
-        throw std::wstring(L"no such class exists: ")+className;
-    }
-    std::wstring getVariableName(H::LObject& o, Entries& variables){
-        std::wclog << "Attempt to find "<<o<<" in:\n";
-        for(auto& kv : variables){
-            std::wclog<<kv.second<<std::endl;
-            if(kv.second == o) return kv.first;
-        }
-        throw std::wstring(L"internal error you shouldn't see");
+    std::wstring getVariableName(H::LObject& o, H::Entries& variables) noexcept{
+        for(auto& kv : variables)
+            if(kv.second == o)
+                return kv.first;
+        return L"<unnamed>";
     }
     
-    H::LObject methodCall(std::wstring methodName, H::LObjects& arguments, H::LClass provider){
-        const std::wstring fullName = provider->name + L"." + methodName;
+    H::LObject safeArgsCall(const std::wstring& name, H::LObjects& args, H::Entries& scope){
         try {
-            H::NativeFunction& method = H::emptyF;
-            try {
-                method = provider->prototype.at(methodName);
-            } catch(std::out_of_range&) {
-                throw fullName + L" is not defined";
-            }
-            return method(arguments);
-        } catch(std::out_of_range&){
-            throw fullName + L": not enough arguments";
-        } catch(std::bad_variant_access&){
-            throw fullName + L": invalid arguments' types passed";
-        }
-    }
-    H::LObject methodCall(H::LObject methodName, H::LObjects& arguments, H::LClass provider){
-        try {
-            return methodCall(rawString(methodName), arguments, provider);
-        } catch(std::bad_variant_access&){
-            throw std::wstring(L"provided method name is not a string");
+            return args[0]->call(name, args);
+        } catch (std::wstring& err){
+            err = name+err;
+            H::LObject p = args[0];
+            do err = getVariableName(p, scope)+L"."+err;
+            while (p = p->parent);
+            throw err;
         }
     }
     
-    H::LObjects execSubtrees(const Parser::SyntaxTree& parent, Entries& scope){
+    H::LObjects execSubtrees(const Parser::SyntaxTree& parent, H::Entries& scope){
         const Parser::SyntaxTrees& trees = std::get<Parser::SyntaxTrees>(parent.value);
-        H::LObjects children{};
-        std::transform(trees.begin(), trees.end(), std::back_inserter(children),
+        H::LObjects children(trees.size());
+        std::transform(trees.begin(), trees.end(), children.begin(),
             [&scope](const Parser::SyntaxTree& tree){
                 return execTree(tree, scope);
             }
@@ -54,19 +32,19 @@ namespace Runner {
         return children;
     }
 
-    H::LObject execTree(const Parser::SyntaxTree& tree, Entries& outerScope){
+    H::LObject execTree(const Parser::SyntaxTree& tree, H::Entries& outerScope){
         switch(tree.type){
             case Parser::SyntaxTree::CallMethod: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                H::LObject methodName = args.at(1);
+                std::wstring& methodName = rawString(args[1]);
                 args.erase(args.begin()+1);
-            return methodCall(methodName, args, args.at(0)->parent);
+            return safeArgsCall(methodName, args);
             }
             case Parser::SyntaxTree::Constant:
             return std::get<H::LObject>(tree.value);
             case Parser::SyntaxTree::OperationAssign: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                outerScope.insert_or_assign(rawString(args.at(0)), args.at(1));
+                outerScope.insert_or_assign(rawString(args[0]), args[1]);
             return args[1];
             }
             case Parser::SyntaxTree::ControlFlowIf: {
@@ -117,18 +95,22 @@ namespace Runner {
             throw Exceptions::Break();
             case Parser::SyntaxTree::OperationBinary: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                H::LObject operatorName = args.at(0);
+                std::wstring& operatorName = rawString(args[0]);
                 args.erase(args.begin());
-            return methodCall(operatorName, args, args.at(0)->parent);
+            return safeArgsCall(operatorName, args);
             }
             case Parser::SyntaxTree::OperationNew: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                H::LClass instantiator = getClassByName(rawString(args.at(0)));
-                args.erase(args.begin());
-            return instantiator->instantiate(args);
+                try {
+                    H::LObject instantiator = outerScope.at(rawString(args[0]));
+                    args.erase(args.begin());
+                    return H::Object::instantiate(instantiator, args);
+                } catch(std::out_of_range&) {
+                    throw rawString(args[0]) + L" was not defined";
+                }
             }
             case Parser::SyntaxTree::ScopeRoot: {
-                //Entries localScope(outerScope);
+                //H::Entries localScope(outerScope);
                 auto result = execSubtrees(tree, outerScope);
                 return (result.size()? (*(result.end()-1)) : H::null);
             }
@@ -145,7 +127,7 @@ namespace Runner {
         }
     }
 
-    H::LObject run(Parser::SyntaxTree& tree, Entries& variables){
+    H::LObject run(Parser::SyntaxTree& tree, H::Entries& variables){
         try {
             return execTree(tree, variables);
         } catch(std::wstring& err){

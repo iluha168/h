@@ -6,7 +6,7 @@
 namespace Lexer {
     const std::vector<std::wstring> reserved_words({
         //don't change order
-        L"new", L"if", L"else", L"true", L"false", L"while", L"break", L"for"
+        L"new", L"if", L"else", L"while", L"break", L"for"
     });
     extern const std::wstring tokenTypes[] = {
         L"Number",
@@ -131,6 +131,12 @@ namespace Lexer {
                 throw err;
             }
         }
+
+        #ifdef DEBUG
+		    for(size_t i = 0; i < tokens.size(); i++){
+    			std::wclog << i << " " << tokenTypes[tokens[i].type] << L" | " << tokens[i].value << std::endl;
+		    }
+        #endif
         return tokens;
     }
 }

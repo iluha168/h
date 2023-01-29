@@ -1,22 +1,16 @@
 #ifndef RUNNER_HH
 #define RUNNER_HH
 
-#include "../lang/HClass.hh"
+#include "../lang/HClassDecls.hh"
+#include "../global/Global.hh"
 #include "parser.hh"
 
 namespace Runner {
-    typedef std::map<std::wstring, H::LObject> Entries;
+    std::wstring getVariableName(H::LObject&, H::Entries&) noexcept;
+    H::LObject safeArgsCall(const std::wstring&, H::LObjects&, H::Entries& = Global::Scope);
 
-    extern std::vector<H::LClass> classes;
-
-    H::LClass getClassByName(std::wstring);
-    std::wstring getVariableName(H::LObject&);
-    
-    H::LObject methodCall(std::wstring     , H::LObjects&, H::LClass);
-    H::LObject methodCall(H::LObject, H::LObjects&, H::LClass);
-
-    H::LObject execTree(const Parser::SyntaxTree&, Entries&);
-    H::LObject run(Parser::SyntaxTree&, Entries&);
+    H::LObject execTree(const Parser::SyntaxTree&, H::Entries&);
+    H::LObject run(Parser::SyntaxTree&, H::Entries&);
 
     namespace Exceptions {
         class Break{};

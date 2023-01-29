@@ -29,23 +29,31 @@ std::wstring readUTF8(const char* filename)
 
 int main(int argc, char** argv) {
 	//one-time init
-	Runner::classes = {H::Window, H::Number, H::String, H::Boolean, H::Array};
-    H::null = H::Uninitialized->instantiate();
-	for(bool i : {false, true})
-		(H::Booleans[i] = H::Boolean->instantiate())->data = i;
 	srand(time(nullptr));
+	for(bool i : {false, true})
+		(H::Booleans[i] = H::Object::instantiate(H::Boolean))->data = i;
+    H::null = H::Object::instantiate(H::Uninitialized);
+	Global::Scope = {
+		{L"false", H::Booleans[0]},
+		{L"true", H::Booleans[1]},
+		{L"null", H::null},
+		{L"Window", H::Window},
+		{L"Number", H::Number},
+		{L"String", H::String},
+		{L"Boolean", H::Boolean},
+		{L"Array", H::Array},
+	};
 	// read cmd arguments
 	switch(argc){
 		case 1: {
 			std::wcout << L"h REPL - Hit Ctrl+C to exit" << std::endl;
-			H::LObject toString = H::HStringFromString(L"toString");
-			std::wstring code{};
+			std::wstring code{}, toStr(L"toString");
 			while(std::wcout<<L"> "<<std::flush, std::getline(std::wcin, code)){
 				try {
 					auto tokens = Lexer::tokenize(code);
 					auto tree = Parser::syntaxTreeFor(tokens);
 					H::LObjects result = {Runner::run(tree, Global::Scope)};
-					std::wcout << rawString(Runner::methodCall(toString, result, result[0]->parent)) << std::endl;
+					std::wcout << rawString(Runner::safeArgsCall(toStr, result)) << std::endl;
 				} catch(std::wstring& e){
 					std::wcerr << e << std::endl;
 				}
@@ -55,13 +63,8 @@ int main(int argc, char** argv) {
 			// run script
 			try {
 				Lexer::Tokens tokens = Lexer::tokenize(readUTF8(argv[1]));
-				for(size_t i = 0; i < tokens.size(); i++){
-					std::wcout << i << " " << Lexer::tokenTypes[tokens[i].type] << L" | " << tokens[i].value << std::endl;
-				}
 				Parser::SyntaxTree tree = Parser::syntaxTreeFor(tokens);
-				Parser::logTree(tree);
-				Runner::Entries globalScope{};
-				Runner::run(tree, globalScope);
+				Runner::run(tree, Global::Scope);
 			} catch (std::exception& e) {
 				std::wcerr << "Script "<<argv[1]<<" caused native error:\n"<<typeid(e).name()<<L"\n"<<e.what() << std::endl;
 				return RETCODE_SCRIPT_ERROR;
@@ -76,21 +79,21 @@ int main(int argc, char** argv) {
 	}
 	// event loop
 	XEvent event;
-	while(!H::Class::refs.empty()){
+	while(!H::Object::refs.empty()){
 		XNextEvent(Global::dis, &event);
 		switch(event.type){
 			case ClientMessage:
 				//find and destroy window
 				if((Atom)event.xclient.data.l[0] == Global::wmDeleteWindow){
-					auto it = std::find_if(H::Class::refs.begin(), H::Class::refs.end(),
+					auto it = std::find_if(H::Object::refs.begin(), H::Object::refs.end(),
 						[&event](H::LObject& w){
 							try {
 								return rawWin(w) == event.xclient.window;
 							} catch(...) {return false;}
 						}
 					);
-					if(it == H::Class::refs.end()) break;
-					H::Class::unref(*it);
+					if(it == H::Object::refs.end()) break;
+					H::Object::unref(*it);
 				}
 			break;
 			case Expose:
