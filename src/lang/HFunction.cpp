@@ -4,6 +4,7 @@ namespace H {
     LObject HFunctionFromNativeFunction(NativeFunction NativeF){
         LObject f = Object::instantiate(Function);
         f->data = NativeF;
+        std::wclog << L"Set " << rawNativeF(f) << L" to " << NativeF << std::endl;
         return f;
     }
 

@@ -21,14 +21,15 @@ H::LObject H::Object::instantiate(LObject& instantiator, LObjects args)
             [](Object* o_delete){
                 LObjects lo = {LObject(o_delete)}; //! passing object without custom deallocator
                 try {
-                    o_delete->entries.at(L"destructor")->call(L"()", lo);
-                } catch(...) {}
+                    rawNativeF(o_delete->entries.at(L"destructor")->entries.at(L"()"))(lo);
+                } catch(std::out_of_range&) {}
             }
         );
         args.insert(args.begin(), o);
         try {
-            o->entries.at(L"constructor")->call(L"()", args);
-        } catch(...) {}
+            LObjects lo{o};
+            rawNativeF(o->entries.at(L"constructor")->entries.at(L"()"))(lo);
+        } catch(std::out_of_range&){}
         return o;
     } catch(std::out_of_range&){
         throw std::wstring(L"Object is not instantiable");
@@ -66,5 +67,5 @@ namespace H {
     LObject emptyF;
 
     LObject null(nullptr);
-    LObject Booleans[2]{};
+    LObject Booleans[2];
 }

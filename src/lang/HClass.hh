@@ -33,7 +33,7 @@ namespace H {
             std::wstring, // for H::String
             bool, //for H::Boolean
             LObjects, //for H::Array
-            NativeFunction //for H::NativeF
+            NativeFunction //for H::Function
             #define rawNumber(var) (std::get<H::Quaternion>(var->data))
             #define rawrawWin(var) (std::get<std::pair<::Window, ::GC>>(var->data))
             #define rawWin(var) (rawrawWin(var).first)

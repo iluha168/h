@@ -4,6 +4,9 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <functional>
+#include <future>
+
 #define DECLARE_H_CLASS(name) extern LObject name;\
     extern ObjectData name##Proto, name##ObjectProto;\
     extern void name##Init();

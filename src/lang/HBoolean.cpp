@@ -7,7 +7,6 @@ namespace H {
                 o[0]->data = false;
                 return null;
             })},
-            {L"destructor", emptyF},
 
             {L"toString", HFunctionFromNativeFunction([](LObjects& o){
                 return H::HStringFromString(rawBool(o[0])?L"true":L"false");
