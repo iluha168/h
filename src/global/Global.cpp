@@ -1,9 +1,9 @@
 #include "Global.hh"
 
 namespace Global {
-    H::Entries Scope = {};
-    Display* dis = XOpenDisplay(nullptr);
-    Atom wmDeleteWindow = XInternAtom(dis, "WM_DELETE_WINDOW", false);
-    Screen* scr = ScreenOfDisplay(dis, DefaultScreen(dis));
+    H::VarScope Scope = {};
+    Display* dis;
+    Atom wmDeleteWindow;
+    Screen* scr;
     const wchar_t quaternionBasisNames[4] = {L'\0',L'i',L'j',L'k'};
 }

@@ -1,19 +1,16 @@
 #include "HClass.hh"
 
 namespace H {
-    Proto UninitializedProto = {
-        {L"constructor", emptyF},
-		{L"destructor", emptyF},
-        {L"toString", [](LObjects&){
-            return H::HStringFromString(L"null");
-        }}
-    };
-
-    Proto UninitializedClassProto = {
-        {L"$new", [](LObjects& o){
-            o[0]->prototype = UninitializedProto;
-            return null;
-        }},
-    };
-    LObject Uninitialized = LObject(new Object(UninitializedClassProto));
+    IMPLEMENT_H_CLASS(Uninitialized)
+        UninitializedObjectProto = {
+            {L"toString", HFunctionFromNativeFunction([](LObjects&){
+                return H::HStringFromString(L"null");
+            })}
+        };
+    
+        UninitializedProto = {
+            {L"$new", LObject(new Object(UninitializedObjectProto))},
+        };
+        Uninitialized = LObject(new Object(UninitializedProto));
+    IMPLEMENT_H_CLASS_END(Uninitialized)
 }

@@ -2,14 +2,14 @@
 #include "../lang/HClass.hh"
 
 namespace Runner {
-    std::wstring getVariableName(H::LObject& o, H::Entries& variables) noexcept{
+    std::wstring getVariableName(H::LObject& o, H::VarScope& variables) noexcept{
         for(auto& kv : variables)
             if(kv.second == o)
                 return kv.first;
         return L"<unnamed>";
     }
     
-    H::LObject safeArgsCall(const std::wstring& name, H::LObjects& args, H::Entries& scope){
+    H::LObject safeArgsCall(const std::wstring& name, H::LObjects& args, H::VarScope& scope){
         try {
             return args[0]->call(name, args);
         } catch (std::wstring& err){
@@ -21,7 +21,7 @@ namespace Runner {
         }
     }
     
-    H::LObjects execSubtrees(const Parser::SyntaxTree& parent, H::Entries& scope){
+    H::LObjects execSubtrees(const Parser::SyntaxTree& parent, H::VarScope& scope){
         const Parser::SyntaxTrees& trees = std::get<Parser::SyntaxTrees>(parent.value);
         H::LObjects children(trees.size());
         std::transform(trees.begin(), trees.end(), children.begin(),
@@ -32,7 +32,7 @@ namespace Runner {
         return children;
     }
 
-    H::LObject execTree(const Parser::SyntaxTree& tree, H::Entries& outerScope){
+    H::LObject execTree(const Parser::SyntaxTree& tree, H::VarScope& outerScope){
         switch(tree.type){
             case Parser::SyntaxTree::CallMethod: {
                 H::LObjects args = execSubtrees(tree, outerScope);
@@ -110,7 +110,7 @@ namespace Runner {
                 }
             }
             case Parser::SyntaxTree::ScopeRoot: {
-                //H::Entries localScope(outerScope);
+                //H::VarScope localScope(outerScope);
                 auto result = execSubtrees(tree, outerScope);
                 return (result.size()? (*(result.end()-1)) : H::null);
             }
@@ -127,7 +127,7 @@ namespace Runner {
         }
     }
 
-    H::LObject run(Parser::SyntaxTree& tree, H::Entries& variables){
+    H::LObject run(Parser::SyntaxTree& tree, H::VarScope& variables){
         try {
             return execTree(tree, variables);
         } catch(std::wstring& err){

@@ -5,7 +5,7 @@
 #include "../lang/HClassDecls.hh"
 
 namespace Global {
-	extern H::Entries Scope;
+	extern H::VarScope Scope;
     extern Display* dis;
     extern Atom wmDeleteWindow;
     extern Screen* scr;

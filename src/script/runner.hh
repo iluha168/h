@@ -6,11 +6,11 @@
 #include "parser.hh"
 
 namespace Runner {
-    std::wstring getVariableName(H::LObject&, H::Entries&) noexcept;
-    H::LObject safeArgsCall(const std::wstring&, H::LObjects&, H::Entries& = Global::Scope);
+    std::wstring getVariableName(H::LObject&, H::VarScope&) noexcept;
+    H::LObject safeArgsCall(const std::wstring&, H::LObjects&, H::VarScope& = Global::Scope);
 
-    H::LObject execTree(const Parser::SyntaxTree&, H::Entries&);
-    H::LObject run(Parser::SyntaxTree&, H::Entries&);
+    H::LObject execTree(const Parser::SyntaxTree&, H::VarScope&);
+    H::LObject run(Parser::SyntaxTree&, H::VarScope&);
 
     namespace Exceptions {
         class Break{};

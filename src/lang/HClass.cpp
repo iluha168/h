@@ -1,11 +1,8 @@
 #include "HClass.hh"
 #include "../script/runner.hh"
 
-H::Object::Object(Proto& prototype, LObject parent):
-    prototype(prototype),
-    parent(parent)
-{
-}
+H::Object::Object(ObjectData& a, LObject b):
+                      entries(a), parent(b){}
 
 void H::Object::addref(LObject o)
 {
@@ -16,39 +13,44 @@ void H::Object::unref(LObject o)
     refs.erase(std::find(refs.begin(), refs.end(), o));
 }
 
-H::Proto noProto{};
+H::ObjectData noProto{};
 H::LObject H::Object::instantiate(LObject& instantiator, LObjects args)
 {
-    LObject o(new Object(noProto, instantiator),
-        [](Object* o_delete){
-            LObjects lo = {LObject(o_delete)}; //! passing object without custom deallocator
-            try {
-                o_delete->prototype.at(L"destructor")(lo);
-            } catch(std::out_of_range&) {}
-        }
-    );
-    LObjects newObject = {o};
-    instantiator->call(L"$new", newObject);
-    args.insert(args.begin(), o);
-    o->call(L"constructor", args);
-    #ifdef DEBUG
-        std::wclog <<"Object "<<o<<" has Proto "<<(&o->prototype)<<" and parent "<<(o->parent)<<std::endl;
-    #endif
-    return o;
+    try {
+        LObject o(new Object(instantiator->entries.at(L"$new")->entries, instantiator),
+            [](Object* o_delete){
+                LObjects lo = {LObject(o_delete)}; //! passing object without custom deallocator
+                try {
+                    o_delete->entries.at(L"destructor")->call(L"()", lo);
+                } catch(...) {}
+            }
+        );
+        args.insert(args.begin(), o);
+        try {
+            o->entries.at(L"constructor")->call(L"()", args);
+        } catch(...) {}
+        return o;
+    } catch(std::out_of_range&){
+        throw std::wstring(L"Object is not instantiable");
+    }
 }
 
 H::LObject H::Object::call(std::wstring methodName, LObjects& args){
     try {
-        H::NativeFunction& method = H::emptyF;
+        H::LObject& method = H::emptyF;
         try {
-            method = this->prototype.at(methodName);
+            method = this->entries.at(methodName)->entries.at(L"()");
         } catch(std::out_of_range&) {
             throw std::wstring(L" is not defined");
         }
         #ifdef DEBUG
-            std::wclog <<"Calling "<<methodName<<" on "<<args[0]<<" with Proto "<<(&args[0]->prototype)<<" and parent "<<(args[0]->parent)<<std::endl;
+            std::wclog <<"Calling "<<methodName<<" on "<<args[0]<<" with Proto "<<(&args[0]->entries)<<" and parent "<<(args[0]->parent)<<std::endl;
         #endif
-        return method(args);
+        try {
+            return rawNativeF(method)(args);
+        } catch(std::bad_variant_access&){
+            throw std::wstring(L" is not a method");
+        }
     } catch(std::out_of_range&){
         throw std::wstring(L": not enough arguments");
     } catch(std::bad_variant_access&){
@@ -58,23 +60,10 @@ H::LObject H::Object::call(std::wstring methodName, LObjects& args){
 
 namespace H {
     LObjects Object::refs{};
+    decltype(ClassInits) ClassInits{};
 
     //does nothing
-    NativeFunction emptyF = [](LObjects& o){
-        return o[0];
-    };
-    
-    LObject HStringFromString(std::wstring native){
-        LObject str = Object::instantiate(String);
-        str->data = native;
-        return str;
-    }
-    
-    LObject HNumberFromQuaternion(Quaternion q){
-        LObject result = Object::instantiate(Number);
-        result->data = q;
-        return result;
-    }
+    LObject emptyF;
 
     LObject null(nullptr);
     LObject Booleans[2]{};

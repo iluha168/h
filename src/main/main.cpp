@@ -12,6 +12,7 @@
 #define RETCODE_SUCCESS 0
 #define RETCODE_ARGS_AMOUNT 1
 #define RETCODE_SCRIPT_ERROR 2
+#define RETCODE_XSERVER_UNAVAILABLE 3
 
 std::wstring readUTF8(const char* filename)
 {
@@ -27,22 +28,39 @@ std::wstring readUTF8(const char* filename)
     return wss.str();
 }
 
+void HInitialize(){
+	if(!(Global::dis = XOpenDisplay(nullptr))){
+		std::wcerr << L"X11 server is not available" << std::endl;
+		exit(RETCODE_XSERVER_UNAVAILABLE);
+	}
+	Global::wmDeleteWindow = XInternAtom(Global::dis, "WM_DELETE_WINDOW", false);
+	Global::scr = ScreenOfDisplay(Global::dis, DefaultScreen(Global::dis));
+	using namespace H;
+	srand(time(nullptr));
+					//! The order is significant
+	for(void(*f)() : {FunctionInit, UninitializedInit, NumberInit, StringInit, BooleanInit, WindowInit, ArrayInit})
+		f();
+	emptyF = HFunctionFromNativeFunction([](LObjects& o){
+        return o[0];
+    });
+	for(bool i : {false, true})
+		(Booleans[i] = Object::instantiate(Boolean))->data = i;
+    null = Object::instantiate(Uninitialized);
+	Global::Scope = {
+		{L"false", Booleans[0]},
+		{L"true", Booleans[1]},
+		{L"null", null},
+		{L"Window", H::Window},
+		{L"Number", Number},
+		{L"String", String},
+		{L"Boolean", Boolean},
+		{L"Array", Array},
+	};
+}
+
 int main(int argc, char** argv) {
 	//one-time init
-	srand(time(nullptr));
-	for(bool i : {false, true})
-		(H::Booleans[i] = H::Object::instantiate(H::Boolean))->data = i;
-    H::null = H::Object::instantiate(H::Uninitialized);
-	Global::Scope = {
-		{L"false", H::Booleans[0]},
-		{L"true", H::Booleans[1]},
-		{L"null", H::null},
-		{L"Window", H::Window},
-		{L"Number", H::Number},
-		{L"String", H::String},
-		{L"Boolean", H::Boolean},
-		{L"Array", H::Array},
-	};
+	HInitialize();
 	// read cmd arguments
 	switch(argc){
 		case 1: {
