@@ -13,7 +13,6 @@ void H::Object::unref(LObject o)
     refs.erase(std::find(refs.begin(), refs.end(), o));
 }
 
-H::ObjectData noProto{};
 H::LObject H::Object::instantiate(LObject& instantiator, LObjects args)
 {
     try {
@@ -21,14 +20,13 @@ H::LObject H::Object::instantiate(LObject& instantiator, LObjects args)
             [](Object* o_delete){
                 LObjects lo = {LObject(o_delete)}; //! passing object without custom deallocator
                 try {
-                    rawNativeF(o_delete->entries.at(L"destructor")->entries.at(L"()"))(lo);
+                    o_delete->entries.at(L"destructor")->data.function(lo);
                 } catch(std::out_of_range&) {}
             }
         );
         args.insert(args.begin(), o);
         try {
-            LObjects lo{o};
-            rawNativeF(o->entries.at(L"constructor")->entries.at(L"()"))(lo);
+            o->entries.at(L"constructor")->data.function(args);
         } catch(std::out_of_range&){}
         return o;
     } catch(std::out_of_range&){
@@ -40,28 +38,24 @@ H::LObject H::Object::call(std::wstring methodName, LObjects& args){
     try {
         H::LObject& method = H::emptyF;
         try {
-            method = this->entries.at(methodName)->entries.at(L"()");
+            method = this->entries.at(methodName);
         } catch(std::out_of_range&) {
             throw std::wstring(L" is not defined");
         }
         #ifdef DEBUG
             std::wclog <<"Calling "<<methodName<<" on "<<args[0]<<" with Proto "<<(&args[0]->entries)<<" and parent "<<(args[0]->parent)<<std::endl;
         #endif
-        try {
-            return rawNativeF(method)(args);
-        } catch(std::bad_variant_access&){
-            throw std::wstring(L" is not a method");
-        }
+        if(method->parent != Function) throw std::wstring(L" is not a method");
+        return method->data.function(args);
     } catch(std::out_of_range&){
         throw std::wstring(L": not enough arguments");
-    } catch(std::bad_variant_access&){
+    } catch(std::bad_cast&){
         throw std::wstring(L": invalid arguments' types passed");
     }
 }
 
 namespace H {
     LObjects Object::refs{};
-    decltype(ClassInits) ClassInits{};
 
     //does nothing
     LObject emptyF;

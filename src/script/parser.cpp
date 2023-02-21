@@ -64,7 +64,7 @@ namespace Parser {
                         pos++;
                     }
                 }
-                rawNumber(number)[ijk] += tmp;
+                (*number->data.number)[ijk] += tmp;
             } else {
                 throw std::wstring(L"expected a number");
             }
@@ -323,11 +323,10 @@ namespace Parser {
         for(decltype(lvl) i = 0; i < lvl; i++)
             std::wcout << L'~';
         std::wcout << L' ';
-        std::wstring toStr(L"toString");
 
         if(std::holds_alternative<H::LObject>(tree.value)){
             H::LObjects o = {std::get<H::LObject>(tree.value)};
-            std::wcout << rawString(Runner::safeArgsCall(toStr, o)) << std::endl;
+            std::wcout << Runner::safeArgsCall(Global::Strings::toString, o)->data.string << std::endl;
             return;
         }
         std::wcout << treeTypes[tree.type] << std::endl;

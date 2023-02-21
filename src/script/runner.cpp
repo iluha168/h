@@ -6,7 +6,7 @@ namespace Runner {
         for(auto& kv : variables)
             if(kv.second == o)
                 return kv.first;
-        return L"<unnamed>";
+        return L"<temporary>";
     }
     
     H::LObject safeArgsCall(const std::wstring& name, H::LObjects& args, H::VarScope& scope){
@@ -36,7 +36,7 @@ namespace Runner {
         switch(tree.type){
             case Parser::SyntaxTree::CallMethod: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                std::wstring& methodName = rawString(args[1]);
+                std::wstring& methodName = *args[1]->data.string;
                 args.erase(args.begin()+1);
             return safeArgsCall(methodName, args);
             }
@@ -44,30 +44,31 @@ namespace Runner {
             return std::get<H::LObject>(tree.value);
             case Parser::SyntaxTree::OperationAssign: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                outerScope.insert_or_assign(rawString(args[0]), args[1]);
+                outerScope.insert_or_assign(*args[0]->data.string, args[1]);
             return args[1];
             }
             case Parser::SyntaxTree::ControlFlowIf: {
                 const Parser::SyntaxTrees& subtrees = std::get<Parser::SyntaxTrees>(tree.value);
-                try {
-                    if(rawBool(execTree(subtrees[0], outerScope))){
-                        return execTree(subtrees[1], outerScope);
-                    } else if(subtrees.size() > 2){
-                        return execTree(subtrees[2], outerScope);
-                    }
-                } catch(std::bad_variant_access&){
+                H::LObject condition = execTree(subtrees[0], outerScope);
+                if(condition->parent != H::Boolean)
                     throw std::wstring(L"the if statement requires a Boolean condition");
+                if(condition->data.boolean){
+                    return execTree(subtrees[1], outerScope);
+                } else if(subtrees.size() > 2){
+                    return execTree(subtrees[2], outerScope);
                 }
             } return H::null;
             case Parser::SyntaxTree::ControlFlowWhile: {
                 const Parser::SyntaxTrees& subtrees = std::get<Parser::SyntaxTrees>(tree.value);
                 H::LObject last = H::null;
                 try {
-                    while(rawBool(execTree(subtrees[0], outerScope))){
+                    for(;;){
+                        H::LObject condition = execTree(subtrees[0], outerScope);
+                        if(condition->parent != H::Boolean)
+                            throw std::wstring(L"the while statement requires a Boolean condition");
+                        if(!condition->data.boolean) break;
                         last = execTree(subtrees[1], outerScope);
                     }
-                } catch(std::bad_variant_access&){
-                    throw std::wstring(L"the while statement requires a Boolean condition");
                 } catch (Exceptions::Break&){
                     if(subtrees.size() > 2)
                         return execTree(subtrees[2], outerScope);
@@ -78,13 +79,15 @@ namespace Runner {
                 const Parser::SyntaxTrees& subtrees = std::get<Parser::SyntaxTrees>(tree.value);
                 H::LObject last = H::null;
                 try {
-                    for(       execTree(subtrees[0], outerScope);
-                       rawBool(execTree(subtrees[1], outerScope));
-                               execTree(subtrees[2], outerScope)){
+                    execTree(subtrees[0], outerScope);
+                    for(;;){
+                        H::LObject condition = execTree(subtrees[1], outerScope);
+                        if(condition->parent != H::Boolean)
+                            throw std::wstring(L"the for statement requires a Boolean condition");
+                        if(!condition->data.boolean) break;
                         last = execTree(subtrees[3], outerScope);
+                        execTree(subtrees[2], outerScope);
                     }
-                } catch(std::bad_variant_access&){
-                    throw std::wstring(L"the for statement requires a Boolean condition");
                 } catch (Exceptions::Break&){
                     if(subtrees.size() > 4)
                         return execTree(subtrees[4], outerScope);
@@ -95,27 +98,27 @@ namespace Runner {
             throw Exceptions::Break();
             case Parser::SyntaxTree::OperationBinary: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                std::wstring& operatorName = rawString(args[0]);
+                std::wstring& operatorName = *args[0]->data.string;
                 args.erase(args.begin());
             return safeArgsCall(operatorName, args);
             }
             case Parser::SyntaxTree::OperationNew: {
                 H::LObjects args = execSubtrees(tree, outerScope);
                 try {
-                    H::LObject instantiator = outerScope.at(rawString(args[0]));
+                    H::LObject instantiator = outerScope.at(*args[0]->data.string);
                     args.erase(args.begin());
                     return H::Object::instantiate(instantiator, args);
                 } catch(std::out_of_range&) {
-                    throw rawString(args[0]) + L" was not defined";
+                    throw *args[0]->data.string + L" was not defined";
                 }
             }
             case Parser::SyntaxTree::ScopeRoot: {
                 //H::VarScope localScope(outerScope);
-                auto result = execSubtrees(tree, outerScope);
+                H::LObjects result = execSubtrees(tree, outerScope);
                 return (result.size()? (*(result.end()-1)) : H::null);
             }
             case Parser::SyntaxTree::Variable: {
-                std::wstring& varName = rawString(std::get<H::LObject>(tree.value));
+                std::wstring& varName = *std::get<H::LObject>(tree.value)->data.string;
                 try {
                     return outerScope.at(varName);
                 } catch(std::out_of_range&) {

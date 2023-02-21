@@ -11,6 +11,9 @@ namespace Global {
     extern Screen* scr;
     extern Colormap colormap;
     extern const wchar_t quaternionBasisNames[4];
+    namespace Strings {
+        extern const std::wstring toString;
+    }
 }
 
 #endif

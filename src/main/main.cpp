@@ -44,7 +44,7 @@ void HInitialize(){
         return o[0];
     });
 	for(bool i : {false, true})
-		(Booleans[i] = Object::instantiate(Boolean))->data = i;
+		(Booleans[i] = Object::instantiate(Boolean))->data.boolean = i;
     null = Object::instantiate(Uninitialized);
 	Global::Scope = {
 		{L"false", Booleans[0]},
@@ -53,6 +53,7 @@ void HInitialize(){
 		{L"Window", H::Window},
 		{L"Number", Number},
 		{L"String", String},
+		{L"Uninitialized", Uninitialized},
 		{L"Boolean", Boolean},
 		{L"Array", Array},
 	};
@@ -65,13 +66,13 @@ int main(int argc, char** argv) {
 	switch(argc){
 		case 1: {
 			std::wcout << L"h REPL - Hit Ctrl+C to exit" << std::endl;
-			std::wstring code{}, toStr(L"toString");
+			std::wstring code{};
 			while(std::wcout<<L"> "<<std::flush, std::getline(std::wcin, code)){
 				try {
 					auto tokens = Lexer::tokenize(code);
 					auto tree = Parser::syntaxTreeFor(tokens);
 					H::LObjects result = {Runner::run(tree, Global::Scope)};
-					std::wcout << rawString(Runner::safeArgsCall(toStr, result)) << std::endl;
+					std::wcout << Runner::safeArgsCall(Global::Strings::toString, result)->data.string << std::endl;
 				} catch(std::wstring& e){
 					std::wcerr << e << std::endl;
 				}
@@ -106,7 +107,7 @@ int main(int argc, char** argv) {
 					auto it = std::find_if(H::Object::refs.begin(), H::Object::refs.end(),
 						[&event](H::LObject& w){
 							try {
-								return rawWin(w) == event.xclient.window;
+								return w->data.window->first == event.xclient.window;
 							} catch(...) {return false;}
 						}
 					);

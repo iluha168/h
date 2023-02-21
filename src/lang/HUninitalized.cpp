@@ -1,9 +1,9 @@
 #include "HClass.hh"
 
 namespace H {
-    IMPLEMENT_H_CLASS(Uninitialized)
+    DEFINE_H_CLASS(Uninitialized)
         UninitializedObjectProto = {
-            {L"toString", HFunctionFromNativeFunction([](LObjects&){
+            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects&){
                 return H::HStringFromString(L"null");
             })}
         };
@@ -12,5 +12,5 @@ namespace H {
             {L"$new", LObject(new Object(UninitializedObjectProto))},
         };
         Uninitialized = LObject(new Object(UninitializedProto));
-    IMPLEMENT_H_CLASS_END(Uninitialized)
+    DEFINE_H_CLASS_END(Uninitialized)
 }

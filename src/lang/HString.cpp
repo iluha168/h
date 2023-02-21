@@ -3,23 +3,27 @@
 namespace H {
     LObject HStringFromString(std::wstring native){
         LObject str = Object::instantiate(String);
-        str->data = native;
+        *str->data.string = native;
         return str;
     }
 
-    IMPLEMENT_H_CLASS(String)
+    DEFINE_H_CLASS(String)
         StringObjectProto = {
             {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
-                o[0]->data = std::wstring();
+                o[0]->data.string = new std::wstring();
+                return null;
+            })},
+            {L"destructor", HFunctionFromNativeFunction([](LObjects& o){
+                delete o[0]->data.string;
                 return null;
             })},
     
-            {L"toString", HFunctionFromNativeFunction([](LObjects& o){
-                return H::HStringFromString(L'"'+rawString(o[0])+L'"');
+            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects& o){
+                return H::HStringFromString(L'"'+(*o[0]->data.string)+L'"');
             })},
             {L"log", HFunctionFromNativeFunction([](LObjects& strs){
                 for(LObject& str : strs)
-                    std::wcout << rawString(str);
+                    std::wcout << *str->data.string;
                 std::wcout << std::flush;
                 return null;
             })},
@@ -27,7 +31,7 @@ namespace H {
             {L"+", HFunctionFromNativeFunction([](LObjects& strs){
                 std::wstring result;
                 for(LObject& str : strs){
-                    result += rawString(str);
+                    result += *str->data.string;
                 }
                 return H::HStringFromString(result);
             })},
@@ -37,5 +41,5 @@ namespace H {
             {L"$new", LObject(new Object(StringObjectProto))},
         };
         String = LObject(new Object(StringProto));
-    IMPLEMENT_H_CLASS_END(String)
+    DEFINE_H_CLASS_END(String)
 }
