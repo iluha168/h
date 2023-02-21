@@ -2,15 +2,18 @@
 #define GLBOAL_HH
 
 #include <X11/Xlib.h>
-#include "../script/runner.hh"
+#include "../lang/HClassDecls.hh"
 
 namespace Global {
-	extern Runner::Entries Scope;
+	extern H::VarScope Scope;
     extern Display* dis;
     extern Atom wmDeleteWindow;
     extern Screen* scr;
     extern Colormap colormap;
     extern const wchar_t quaternionBasisNames[4];
+    namespace Strings {
+        extern const std::wstring toString;
+    }
 }
 
 #endif

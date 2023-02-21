@@ -1,43 +1,40 @@
 #include "HClass.hh"
-#include "../script/parser.hh"
 
 namespace H {
-    namespace /*Boolean functions*/ {
-    }
-
-    LClass Boolean = new Class(
-        L"Boolean",
-        {
-            {L"constructor", [](LObjects& o){
-                o[0]->data = false;
+    DEFINE_H_CLASS(Boolean)
+        BooleanObjectProto = {
+            {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
+                o[0]->data.boolean = false;
                 return null;
-            }},
-		    {L"destructor", emptyF},
-            {L"toString", [](LObjects& o){
-                std::wstringstream ss;
-                ss << std::boolalpha;
-                for(LObject& b : o){
-                    ss<<rawBool(b);
-                }
-                return H::HStringFromString(ss.str());
-            }},
-            {L"not", [](LObjects& o){
-                return H::Booleans[!rawBool(o.at(0))];
-            }},
-            {L"+", [](LObjects& o){
-                LObject result = Boolean->instantiate();
-                result->data = false;
+            })},
+
+            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects& o){
+                // std::format does not work on my machine ¯\_(ツ)_/¯
+                std::wstringstream s;
+                s<<std::boolalpha<<o[0]->data.boolean;
+                return H::HStringFromString(s.str());
+            })},
+            {L"not", HFunctionFromNativeFunction([](LObjects& o){
+                return H::Booleans[!o.at(0)->data.boolean];
+            })},
+
+            {L"+", HFunctionFromNativeFunction([](LObjects& o){
                 for(LObject& b : o)
-                    result->data = rawBool(result) || rawBool(b);
-                return result;
-            }},
-            {L"*", [](LObjects& o){
-                LObject result = Boolean->instantiate();
-                result->data = true;
+                    if(b->data.boolean)
+                        return Booleans[1];
+                return Booleans[0];
+            })},
+            {L"*", HFunctionFromNativeFunction([](LObjects& o){
                 for(LObject& b : o)
-                    result->data = rawBool(result) && rawBool(b);
-                return result;
-            }},
-        }
-    );
+                    if(!b->data.boolean)
+                        return Booleans[0];
+                return Booleans[1];
+            })},
+        };
+
+        BooleanProto = {
+            {L"$new", LObject(new Object(BooleanObjectProto))},
+        };
+        Boolean = LObject(new Object(BooleanProto));
+    DEFINE_H_CLASS_END(Boolean)
 }

@@ -1,16 +1,19 @@
-CC = g++
-MKDIR = mkdir
-CFLAGS = -std=c++20 -g -pipe -O0 -Wall -Wextra -Wpedantic -lX11 -lstdc++ -lm
+RM = rm
+CXXFLAGS = -std=c++20 -pipe -Wall -Wextra -Wpedantic -lX11 -lstdc++ -lm -O0
+CXX = g++
+
+debug: CXXFLAGS += -g -DDEBUG
+debug: main
 
 SOURCES = $(wildcard ../src/*/*.cpp)
 HEADERS = $(wildcard ../src/*/*.hh )
 OBJECTS = $(notdir $(patsubst %.cpp, %.o, $(SOURCES)))
 
 main: $(OBJECTS)
-	$(CC) $^ -o ./h.exe $(CFLAGS)
+	$(CXX) $^ -o ./h $(CXXFLAGS)
 
 %.o: ../src/*/%.cpp $(HEADERS)
-	$(CC) -c $< -o $@ $(CFLAGS) -I$(dir $<)
+	$(CXX) -c $< -o $@ -I$(dir $<) $(CXXFLAGS)
 
 clean:
-	rm *.o
+	$(RM) *.o

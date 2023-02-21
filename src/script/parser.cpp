@@ -48,7 +48,7 @@ namespace Parser {
     }
 
     SyntaxTree parseNumber(size_t& pos, Lexer::Tokens& tokens){
-        H::LObject number = H::Number->instantiate();
+        H::LObject number = H::Object::instantiate(H::Number);
         const auto& helper = [&]{
             double tmp = 1, ijk = 0;
             if(tokens[pos  ].type == Lexer::Token::Sign &&
@@ -64,7 +64,7 @@ namespace Parser {
                         pos++;
                     }
                 }
-                rawNumber(number)[ijk] += tmp;
+                (*number->data.number)[ijk] += tmp;
             } else {
                 throw std::wstring(L"expected a number");
             }
@@ -132,12 +132,7 @@ namespace Parser {
                     } break;
                     case 2: //else
                     throw std::wstring(L"else without previous if");
-                    case 3: //true
-                    case 4: //false
-                        tempTree = treeForConstant(H::Booleans[reservedWordIndex == 3]);
-                        pos++;
-                    break;
-                    case 5: {//while
+                    case 3: {//while
                         SyntaxTree condition = parseExpression(++pos, tokens);
                         tempTree = {
                             SyntaxTree::ControlFlowWhile,
@@ -146,14 +141,14 @@ namespace Parser {
                             })
                         };
                     } break;
-                    case 6: //break
+                    case 4: //break
                         tempTree = {
                             SyntaxTree::ControlFlowBreak,
                             SyntaxTrees({})
                         };
                         pos++;
                     break;
-                    case 7: //for
+                    case 5: //for
                         pos++;
                         tempTree = {
                             SyntaxTree::ControlFlowFor,
@@ -170,8 +165,8 @@ namespace Parser {
                 // Add optional else branch
                 switch(reservedWordIndex){
                     case 1: //if
-                    case 5: //while
-                    case 7: //for
+                    case 3: //while
+                    case 5: //for
                     if(tokens[pos].type == Lexer::Token::Reserved && tokens[pos].value == L"else")
                         std::get<SyntaxTrees>(tempTree.value).push_back(
                             parseExpression(++pos, tokens)
@@ -224,14 +219,14 @@ namespace Parser {
         if(tokens[pos].type == Lexer::Token::Punct){
             switch(tokens[pos].value[0]){
                 case L'.': {
-                        SyntaxTrees classMethod = {
-                                tempTree, //object
-                                treeForString(tokens[++pos].value), //method name
-                        };
-                        tempTree = {
-                            SyntaxTree::CallMethod,
-                            treesConcat(classMethod, parseCallArguments(++pos, tokens))
-                        };
+                    SyntaxTrees classMethod = {
+                            tempTree, //object
+                            treeForString(tokens[++pos].value), //method name
+                    };
+                    tempTree = {
+                        SyntaxTree::CallMethod,
+                        treesConcat(classMethod, parseCallArguments(++pos, tokens))
+                    };
                 } break;
                 case L'=': {
                     SyntaxTree varName = treeForString(tokens[pos-1].value);
@@ -318,6 +313,9 @@ namespace Parser {
             err += L"^";
             throw err;
         }
+        #ifdef DEBUG
+            Parser::logTree(root);
+        #endif
         return root;
     }
 
@@ -328,7 +326,7 @@ namespace Parser {
 
         if(std::holds_alternative<H::LObject>(tree.value)){
             H::LObjects o = {std::get<H::LObject>(tree.value)};
-            std::wcout << rawString(Runner::methodCall(L"toString", o, o[0]->parent)) << std::endl;
+            std::wcout << Runner::safeArgsCall(Global::Strings::toString, o)->data.string << std::endl;
             return;
         }
         std::wcout << treeTypes[tree.type] << std::endl;

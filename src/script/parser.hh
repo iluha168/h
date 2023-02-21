@@ -10,6 +10,7 @@ namespace Parser {
 
     struct SyntaxTree;
     typedef std::vector<SyntaxTree> SyntaxTrees;
+    typedef std::shared_ptr<SyntaxTree> LSyntaxTree;
     struct SyntaxTree {
         enum Type {
             ScopeRoot,
