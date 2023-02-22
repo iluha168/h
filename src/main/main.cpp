@@ -72,9 +72,14 @@ int main(int argc, char** argv) {
 					auto tokens = Lexer::tokenize(code);
 					auto tree = Parser::syntaxTreeFor(tokens);
 					H::LObjects result = {Runner::run(tree, Global::Scope)};
-					std::wcout << Runner::safeArgsCall(Global::Strings::toString, result)->data.string << std::endl;
+					H::LObject output = Runner::safeArgsCall(Global::Strings::toString, result);
+					std::wcout << (output->parent == H::String? *output->data.string : L"¯\\_(ツ)_/¯") << std::endl;
 				} catch(std::wstring& e){
 					std::wcerr << e << std::endl;
+				} catch(std::bad_cast& e){
+					std::wcerr << L"Type conversion error!" << std::endl;
+				} catch(std::out_of_range& e){
+					std::wcerr << L"Not enough arguments passed!" << std::endl;
 				}
 			}
 		} return RETCODE_SUCCESS;

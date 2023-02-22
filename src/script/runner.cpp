@@ -8,16 +8,22 @@ namespace Runner {
                 return kv.first;
         return L"<temporary>";
     }
+
+    std::wstring fullVariableName(H::LObject& o, H::VarScope& variables) noexcept{
+        std::wstring name;
+        H::LObject& p = o;
+        do name = getVariableName(o, variables)+L"."+name;
+        while (p = p->parent);
+        return name;
+    }
     
     H::LObject safeArgsCall(const std::wstring& name, H::LObjects& args, H::VarScope& scope){
         try {
             return args[0]->call(name, args);
         } catch (std::wstring& err){
-            err = name+err;
-            H::LObject p = args[0];
-            do err = getVariableName(p, scope)+L"."+err;
-            while (p = p->parent);
-            throw err;
+            throw fullVariableName(args[0], scope)+err;
+        } catch (std::out_of_range& err){
+            throw std::wstring(L"Not enough arguments passed for ")+fullVariableName(args[0], scope);
         }
     }
     

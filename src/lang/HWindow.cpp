@@ -50,9 +50,12 @@ namespace H {
     DEFINE_H_CLASS(Window)
         WindowObjectProto = {
             {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
+                WindowInfo* w = new WindowInfo;
+                w->first = 0;
+                w->second = nullptr;
+                o.at(0)->data.window = w;
                 if(o.at(1)->parent != Number) throw std::bad_cast();
                 if(o.at(2)->parent != String) throw std::bad_cast();
-                WindowInfo* w = new WindowInfo;
                 Quaternion& geom = *o[1]->data.number;
                 w->first = XCreateSimpleWindow(
                     Global::dis, DefaultRootWindow(Global::dis),
@@ -69,14 +72,13 @@ namespace H {
 	            XMapRaised(Global::dis, w->first);
                 w->second = XCreateGC(Global::dis, w->first, 0,0);
                 XFlush(Global::dis);
-                o.at(0)->data.window = w;
                 Object::addref(o[0]);
 	            return null;
 	        })},
 	        {L"destructor", HFunctionFromNativeFunction([](LObjects& o){
                 WindowInfo*& w = o[0]->data.window;
-	            XFreeGC(Global::dis, w->second);
-	            XDestroyWindow(Global::dis, w->first);
+	            if(w->second) XFreeGC(Global::dis, w->second);
+	            if(w->first) XDestroyWindow(Global::dis, w->first);
                 delete w;
                 return null;
             })},
