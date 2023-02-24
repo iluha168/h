@@ -49,7 +49,7 @@ namespace H {
 
     DEFINE_H_CLASS(Window)
         WindowObjectProto = {
-            {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"constructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 WindowInfo* w = new WindowInfo;
                 w->first = 0;
                 w->second = nullptr;
@@ -75,7 +75,7 @@ namespace H {
                 Object::addref(o[0]);
 	            return null;
 	        })},
-	        {L"destructor", HFunctionFromNativeFunction([](LObjects& o){
+	        {L"destructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 WindowInfo*& w = o[0]->data.window;
 	            if(w->second) XFreeGC(Global::dis, w->second);
 	            if(w->first) XDestroyWindow(Global::dis, w->first);
@@ -83,11 +83,11 @@ namespace H {
                 return null;
             })},
 
-            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects& o){
+            {Global::Strings::toString, HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o[0]->parent != Window) throw std::bad_cast();
                 return H::HStringFromString(L"Window"+std::to_wstring(o[0]->data.window->first));
             })},
-            {L"geometry", HFunctionFromNativeFunction([](LObjects& o){
+            {L"geometry", HNativeFunctionFromFunctionType([](LObjects& o){
                 try {
                     if(o.at(1)->parent != Number) throw std::bad_cast();
                     Quaternion& geom = *o[1]->data.number;
@@ -103,21 +103,21 @@ namespace H {
                     });
                 }
             })},
-            {L"drawPoint", HFunctionFromNativeFunction([](LObjects& o){
+            {L"drawPoint", HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o.at(1)->parent != Number) throw std::bad_cast();
                 WindowInfo& win = *o[0]->data.window;
                 Quaternion& n = *o[1]->data.number;
                 XDrawPoint(Global::dis, win.first, win.second, n[0], n[1]);
                 return o[0];
             })},
-            {L"drawLine", HFunctionFromNativeFunction([](LObjects& o){
+            {L"drawLine", HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o.at(1)->parent != Number) throw std::bad_cast();
                 WindowInfo& win = *o[0]->data.window;
                 Quaternion& n = *o[1]->data.number;
                 XDrawLine(Global::dis, win.first, win.second, n[0], n[1], n[2], n[3]);
                 return o[0];
             })},
-            {L"foreground", HFunctionFromNativeFunction([](LObjects& o){
+            {L"foreground", HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o.at(1)->parent != Number) throw std::bad_cast();
                 GC& gc = o[0]->data.window->second;
                 try {
@@ -128,7 +128,7 @@ namespace H {
                     return HNumberFromQuaternion(unRGBA(WinGetGCValues(gc, GCForeground).foreground));
                 }
             })},
-            {L"clear", HFunctionFromNativeFunction([](LObjects& o){
+            {L"clear", HNativeFunctionFromFunctionType([](LObjects& o){
                 XClearWindow(Global::dis, o[0]->data.window->first);
                 return o[0];
             })}

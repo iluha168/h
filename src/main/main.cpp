@@ -38,9 +38,9 @@ void HInitialize(){
 	using namespace H;
 	srand(time(nullptr));
 					//! The order is significant
-	for(void(*f)() : {FunctionInit, UninitializedInit, NumberInit, StringInit, BooleanInit, WindowInit, ArrayInit})
+	for(void(*f)() : {NativeFunctionInit, UninitializedInit, NumberInit, StringInit, BooleanInit, WindowInit, ArrayInit})
 		f();
-	emptyF = HFunctionFromNativeFunction([](LObjects& o){
+	emptyF = HNativeFunctionFromFunctionType([](LObjects& o){
         return o[0];
     });
 	for(bool i : {false, true})

@@ -26,28 +26,28 @@ namespace H {
 
     DEFINE_H_CLASS(Array)
         ArrayObjectProto = {
-            {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"constructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 LObjects* newArray = new LObjects{o};
                 newArray->erase(newArray->begin()); //remove first element
                 o[0]->data.array = newArray;
                 return null;
             })},
-            {L"destructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"destructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 delete o[0]->data.array;
                 return null;
             })},
-            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects& o){
+            {Global::Strings::toString, HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o[0]->parent != Array) throw std::bad_cast();
                 return H::HStringFromString(ArrayToString(*o[0]->data.array));
             })},
-            {L"push", HFunctionFromNativeFunction([](LObjects& o){
+            {L"push", HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o[0]->parent != Array) throw std::bad_cast();
                 LObjects*& This = o[0]->data.array;
                 This->insert(This->end(), o.begin()+1, o.end());
                 return o[0];
             })},
 
-            {L"[]", HFunctionFromNativeFunction([](LObjects& o){
+            {L"[]", HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o.size() < 2) throw std::out_of_range("");
                 if(o[1]->parent != Number) throw std::bad_cast();
                 try {

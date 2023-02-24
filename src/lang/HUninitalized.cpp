@@ -3,7 +3,7 @@
 namespace H {
     DEFINE_H_CLASS(Uninitialized)
         UninitializedObjectProto = {
-            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects&){
+            {Global::Strings::toString, HNativeFunctionFromFunctionType([](LObjects&){
                 return H::HStringFromString(L"null");
             })}
         };

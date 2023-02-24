@@ -24,7 +24,7 @@ H::LObject H::Object::instantiate(LObject& instantiator, LObjects args)
         }
     );
     args.insert(args.begin(), o);
-    NativeFunction constructor;
+    FunctionType constructor;
     try {
         constructor = o->entries.at(L"constructor")->data.function;
     } catch(std::out_of_range&){
@@ -45,7 +45,7 @@ H::LObject H::Object::call(std::wstring methodName, LObjects& args){
         #ifdef DEBUG
             std::wclog <<"Calling "<<methodName<<" on "<<args[0]<<" with Proto "<<(&args[0]->entries)<<" and parent "<<(args[0]->parent)<<std::endl;
         #endif
-        if(method->parent != Function) throw std::wstring(L" is not a method");
+        if(method->parent != NativeFunction) throw std::wstring(L" is not a method");
         return method->data.function(args);
     } catch(std::out_of_range&){
         throw std::wstring(L": not enough arguments");

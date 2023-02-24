@@ -20,7 +20,7 @@ namespace H {
     class Object;
     typedef std::shared_ptr<Object> LObject;
     typedef std::vector<LObject> LObjects;
-    typedef LObject(*NativeFunction)(LObjects&);
+    typedef LObject(*FunctionType)(LObjects&);
 
     typedef std::map<std::wstring, LObject> ObjectData;
     typedef ObjectData VarScope;
@@ -30,14 +30,14 @@ namespace H {
 
     LObject HStringFromString(std::wstring);
     LObject HNumberFromQuaternion(Quaternion);
-    LObject HFunctionFromNativeFunction(NativeFunction);
+    LObject HNativeFunctionFromFunctionType(FunctionType);
 
     extern LObject null, emptyF;
 
     //Index 0 - false, index 1 - true
     extern LObject Booleans[2];
 
-    DECLARE_H_CLASS(Function)
+    DECLARE_H_CLASS(NativeFunction)
     DECLARE_H_CLASS(Uninitialized)
     DECLARE_H_CLASS(Number)
     DECLARE_H_CLASS(String)

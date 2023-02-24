@@ -4,9 +4,13 @@
 #include <functional>
 
 namespace Lexer {
+    //dont change order of elements in containers
     const std::vector<std::wstring> reserved_words({
-        //don't change order
         L"new", L"if", L"else", L"while", L"break", L"for"
+    });
+    const std::vector<std::wstring> all_puncts({
+        L"{", L"(", L"[", L".", L"=", L";", L"<", L">", L"*", L"+", L"-", L"]", L")", L"}", L",",
+        L"==", L"||", L"&&"
     });
     extern const std::wstring tokenTypes[] = {
         L"Number",
@@ -17,16 +21,25 @@ namespace Lexer {
         L"Sign",
     };
 
+    size_t indexOf(const std::wstring value, const std::vector<std::wstring>& container){
+        return std::find(container.begin(), container.end(), value)-container.begin();
+    }
+    bool includes(const std::wstring value, const std::vector<std::wstring>& container){
+        return std::find(container.begin(), container.end(), value) != container.end();
+    }
+
     Token tryReadPunct(size_t& pos, std::wstring& code){
-        if(std::iswpunct(code[pos])){
-            Token punct(Token::Punct, L"");
-            if(code[pos] == L'+' || code[pos] == L'-')
-                punct.type = Token::Sign;
-            punct.value = code[pos];
+        Token punct(Token::Punct, L"");
+        while(std::iswpunct(code[pos])){
+            punct.value += code[pos];
             pos++;
-            return punct;
+            if(includes(punct.value, all_puncts)) break;
         }
-        throw -1;
+        if(punct.value == L"")
+            throw -1;
+        if(punct.value == L"+" || punct.value == L"-")
+            punct.type = Token::Sign;
+        return punct;
     }
     Token tryReadString(size_t& pos, std::wstring& code){
         if(code[pos] != L'"') throw -1;

@@ -50,7 +50,7 @@ namespace Runner {
             return std::get<H::LObject>(tree.value);
             case Parser::SyntaxTree::OperationAssign: {
                 H::LObjects args = execSubtrees(tree, outerScope);
-                outerScope.insert_or_assign(*args[0]->data.string, args[1]);
+                args[0]->data = args[1]->data;
             return args[1];
             }
             case Parser::SyntaxTree::ControlFlowIf: {
@@ -125,11 +125,9 @@ namespace Runner {
             }
             case Parser::SyntaxTree::Variable: {
                 std::wstring& varName = *std::get<H::LObject>(tree.value)->data.string;
-                try {
-                    return outerScope.at(varName);
-                } catch(std::out_of_range&) {
-                    throw varName + L" was not defined";
-                }
+                if(!outerScope.contains(varName))
+                    outerScope.insert_or_assign(varName, H::Object::instantiate(H::Uninitialized));
+                return outerScope.at(varName);
             }
             default:
             throw std::wstring(L"unknown syntax tree type");

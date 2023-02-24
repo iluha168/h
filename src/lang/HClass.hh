@@ -32,7 +32,7 @@ namespace H {
             std::wstring* string;
             bool boolean;
             LObjects* array;
-            NativeFunction function;
+            FunctionType function;
         } data;
     };
 }

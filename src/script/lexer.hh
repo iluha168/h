@@ -6,9 +6,12 @@
 #include <vector>
 
 namespace Lexer {
-    extern const std::vector<std::wstring> reserved_words;
-
+    extern const std::vector<std::wstring> reserved_words, all_puncts;
     extern const std::wstring tokenTypes[];
+
+    size_t indexOf(const std::wstring, const std::vector<std::wstring>&);
+    bool includes(const std::wstring, const std::vector<std::wstring>&);
+
     struct Token {
         enum Type {
             Number,
@@ -17,9 +20,7 @@ namespace Lexer {
             Identifier,
             Reserved,
             Sign,
-        };
-
-        Type type;
+        } type;
         std::wstring value;
     };
     typedef std::vector<Token> Tokens;

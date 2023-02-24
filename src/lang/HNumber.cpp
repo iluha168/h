@@ -70,15 +70,15 @@ namespace H {
 
     DEFINE_H_CLASS(Number)
         NumberObjectProto = {
-            {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"constructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 o[0]->data.number = new Quaternion{};
                 return null;
             })},
-            {L"destructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"destructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 delete o[0]->data.number;
                 return null;
             })},
-            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects& o){
+            {Global::Strings::toString, HNativeFunctionFromFunctionType([](LObjects& o){
                 if(o[0]->parent != Number) throw std::bad_cast();
                 std::wstringstream ss;
                 Quaternion& v = *o[0]->data.number;
@@ -89,53 +89,53 @@ namespace H {
                 if(!ss.tellp()) ss << L"0";
                 return H::HStringFromString(ss.str());
             })},
-            {L"+", HFunctionFromNativeFunction([](LObjects& nn){
+            {L"+", HNativeFunctionFromFunctionType([](LObjects& nn){
                 return HNumberFromQuaternion(sum(*nn[0]->data.number, *nn[1]->data.number));
             })},
-            {L"-", HFunctionFromNativeFunction([](LObjects& nn){
+            {L"-", HNativeFunctionFromFunctionType([](LObjects& nn){
                 return HNumberFromQuaternion(sub(*nn[0]->data.number, *nn[1]->data.number));
             })},
-            {L"*", HFunctionFromNativeFunction([](LObjects& nn){
+            {L"*", HNativeFunctionFromFunctionType([](LObjects& nn){
                 return HNumberFromQuaternion(mul(*nn[0]->data.number, *nn[1]->data.number));
             })},
-            {L"absSq", HFunctionFromNativeFunction([](LObjects& q){
+            {L"absSq", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(absSq(*q[0]->data.number));
             })},
-            {L"abs", HFunctionFromNativeFunction([](LObjects& q){
+            {L"abs", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(abs  (*q[0]->data.number));
             })},
-            {L"conjugate", HFunctionFromNativeFunction([](LObjects& q){
+            {L"conjugate", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(conjugate(*q[0]->data.number));
             })},
-            {L"normalize", HFunctionFromNativeFunction([](LObjects& q){
+            {L"normalize", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(unit(*q[0]->data.number));
             })},
-            {L"reciprocal", HFunctionFromNativeFunction([](LObjects& q){
+            {L"reciprocal", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(reciprocal(*q[0]->data.number));
             })},
-            {L"exp", HFunctionFromNativeFunction([](LObjects& q){
+            {L"exp", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(exp(*q[0]->data.number));
             })},
-            {L"sq", HFunctionFromNativeFunction([](LObjects& q){
+            {L"sq", HNativeFunctionFromFunctionType([](LObjects& q){
                 return HNumberFromQuaternion(square(*q[0]->data.number));
             })},
     
-            {L"[]", HFunctionFromNativeFunction([](LObjects& i){
+            {L"[]", HNativeFunctionFromFunctionType([](LObjects& i){
                 return HNumberFromQuaternion({ i[0]->data.number->at(i[1]->data.number->at(0)) ,0,0,0});
             })},
             //comparison functions ignore any complex parts, because complexes "is not an ordered field"
             //https://en.wikipedia.org/wiki/Complex_number#Field_structure
-            {L"<", HFunctionFromNativeFunction([](LObjects& op){
+            {L"<", HNativeFunctionFromFunctionType([](LObjects& op){
                 return Booleans[op[0]->data.number->at(0) < op[1]->data.number->at(0)];
             })},
-            {L">", HFunctionFromNativeFunction([](LObjects& op){
+            {L">", HNativeFunctionFromFunctionType([](LObjects& op){
                 return Booleans[op[0]->data.number->at(0) > op[1]->data.number->at(0)];
             })}
         };
     
         NumberProto = {
             {L"$new", LObject(new Object(NumberObjectProto))},
-            {L"random", HFunctionFromNativeFunction([](LObjects&){
+            {L"random", HNativeFunctionFromFunctionType([](LObjects&){
                 LObject n = Object::instantiate(Number);
                 for(uint8_t i = 0; i < 4; i++)
                     n->data.number->at(i) = Quaternion::value_type(rand())/Quaternion::value_type(RAND_MAX);

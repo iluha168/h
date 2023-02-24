@@ -9,26 +9,26 @@ namespace H {
 
     DEFINE_H_CLASS(String)
         StringObjectProto = {
-            {L"constructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"constructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 o[0]->data.string = new std::wstring();
                 return null;
             })},
-            {L"destructor", HFunctionFromNativeFunction([](LObjects& o){
+            {L"destructor", HNativeFunctionFromFunctionType([](LObjects& o){
                 delete o[0]->data.string;
                 return null;
             })},
     
-            {Global::Strings::toString, HFunctionFromNativeFunction([](LObjects& o){
+            {Global::Strings::toString, HNativeFunctionFromFunctionType([](LObjects& o){
                 return H::HStringFromString(L'"'+(*o[0]->data.string)+L'"');
             })},
-            {L"log", HFunctionFromNativeFunction([](LObjects& strs){
+            {L"log", HNativeFunctionFromFunctionType([](LObjects& strs){
                 for(LObject& str : strs)
                     std::wcout << *str->data.string;
                 std::wcout << std::flush;
                 return null;
             })},
     
-            {L"+", HFunctionFromNativeFunction([](LObjects& strs){
+            {L"+", HNativeFunctionFromFunctionType([](LObjects& strs){
                 std::wstring result;
                 for(LObject& str : strs){
                     result += *str->data.string;

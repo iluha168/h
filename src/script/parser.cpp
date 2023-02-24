@@ -53,7 +53,7 @@ namespace Parser {
             double tmp = 1, ijk = 0;
             if(tokens[pos  ].type == Lexer::Token::Sign &&
                tokens[pos+1].type == Lexer::Token::Number){
-                if(tokens[pos++].value[0] == L'-') tmp = -1;
+                if(tokens[pos++].value == L"-") tmp = -1;
             }
             if(tokens.at(pos).type == Lexer::Token::Number){
                 tmp *= std::stod(tokens[pos++].value);
@@ -76,30 +76,30 @@ namespace Parser {
         return treeForConstant(number);
     }
     
-    SyntaxTrees parseList(size_t& pos, Lexer::Tokens& tokens, const wchar_t separator, const wchar_t end){
+    SyntaxTrees parseList(size_t& pos, Lexer::Tokens& tokens, const std::wstring separator, const std::wstring end){
         SyntaxTrees args = {};
         for(;;){
             pos++;
             if(tokens[pos].type == Lexer::Token::Punct
-            && tokens[pos].value[0] == end){
-                    pos++;
-                    return args;
+            && tokens[pos].value == end){
+                pos++;
+                return args;
             }
             args.push_back(parseExpression(pos, tokens));
             if(tokens[pos].type == Lexer::Token::Punct){
-                const wchar_t punct = tokens[pos].value[0];
+                const std::wstring punct = tokens[pos].value;
                      if(punct == end) pos--;
                 else if(punct == separator) continue;
-                else throw std::wstring(L"expected")+separator+L" or "+end+L" in call arguments.";
+                else throw std::wstring(L"expected")+separator+L" or "+end+L" in a list.";
             }
-            else throw std::wstring(L"expected Punct.");
+            else throw std::wstring(L"expected a punctuation mark.");
         }
         return args;
     }
 
     SyntaxTrees parseCallArguments(size_t& pos, Lexer::Tokens& tokens, bool optional = false){
-        if(tokens[pos].type == Lexer::Token::Punct && tokens[pos].value[0] == L'('){
-            return parseList(pos, tokens, L',', L')');
+        if(tokens[pos].type == Lexer::Token::Punct && tokens[pos].value == L"("){
+            return parseList(pos, tokens, L",", L")");
         } else {
             if(optional) return {};
             throw std::wstring(L"expected call arguments.");
@@ -110,7 +110,7 @@ namespace Parser {
         SyntaxTree tempTree;
         switch(tokens[pos].type){
             case Lexer::Token::Reserved: {
-                size_t reservedWordIndex = std::find(Lexer::reserved_words.begin(), Lexer::reserved_words.end(), tokens[pos].value)-Lexer::reserved_words.begin();
+                size_t reservedWordIndex = Lexer::indexOf(tokens[pos].value, Lexer::reserved_words);
                 switch(reservedWordIndex){
                     case 0: {//new
                         SyntaxTrees className = {treeForString(tokens[++pos].value)};
@@ -184,25 +184,25 @@ namespace Parser {
             tempTree = treeForVariable(tokens[pos++].value);
             break;
             case Lexer::Token::Punct:
-                switch (tokens[pos].value[0]){
-                case L'{':
+                switch (Lexer::indexOf(tokens[pos].value, Lexer::all_puncts)){
+                case 0: // {
                     tempTree = {SyntaxTree::ScopeRoot, SyntaxTrees()};
-                    for(pos++; tokens[pos].type != Lexer::Token::Punct || tokens[pos].value[0] != L'}';){
+                    for(pos++; tokens[pos].type != Lexer::Token::Punct || tokens[pos].value != L"}";){
                         std::get<SyntaxTrees>(tempTree.value).push_back(parseExpression(pos, tokens));
                     };
                     pos++;
                 break;
-                case L'(':
+                case 1: // (
                     tempTree = parseExpression(++pos, tokens);
-                    if(tokens[pos].type != Lexer::Token::Punct || tokens[pos].value[0] != L')')
+                    if(tokens[pos].type != Lexer::Token::Punct || tokens[pos].value != L")")
                         throw std::wstring(L"unmatched parentheses ')'");
                     pos++;
                 break;
-                case L'[':
+                case 2: // [
                     tempTree = {SyntaxTree::OperationNew,
                         treesConcat(
                             {treeForString(L"Array")},
-                            parseList(pos, tokens, L',', L']')
+                            parseList(pos, tokens, L",", L"]")
                         )
                     };
                 break;
@@ -217,8 +217,8 @@ namespace Parser {
 
         while(pos < tokens.size())
         if(tokens[pos].type == Lexer::Token::Punct){
-            switch(tokens[pos].value[0]){
-                case L'.': {
+            switch(Lexer::indexOf(tokens[pos].value, Lexer::all_puncts)){
+                case 3: { // .
                     SyntaxTrees classMethod = {
                             tempTree, //object
                             treeForString(tokens[++pos].value), //method name
@@ -228,20 +228,19 @@ namespace Parser {
                         treesConcat(classMethod, parseCallArguments(++pos, tokens))
                     };
                 } break;
-                case L'=': {
-                    SyntaxTree varName = treeForString(tokens[pos-1].value);
+                case 4: { // =
                     tempTree = {
                         SyntaxTree::OperationAssign, 
                         SyntaxTrees({
-                            varName,
+                            tempTree,
                             parseExpression(++pos, tokens)
                         })
                     };
                 } break;
-                case L';':
+                case 5: // ;
                     pos++;
                 return tempTree;
-                case L'[':
+                case 2: // [
                     tempTree = {
                         SyntaxTree::CallMethod,
                         SyntaxTrees({
@@ -253,9 +252,12 @@ namespace Parser {
                     if(tokens[pos].type == Lexer::Token::Punct && tokens[pos].value == L"]") pos++;
                     else throw std::wstring(L"unmatched parentheses ']'");
                 break;
-                case L'<':
-                case L'>':
-                case L'*':
+                case 6: // <
+                case 7: // >
+                case 8: // *
+                case 15:// ==
+                case 16:// ||
+                case 17:// &&
                     tempTree = {
                         SyntaxTree::OperationBinary,
                         SyntaxTrees({
@@ -265,7 +267,7 @@ namespace Parser {
                     };
                     std::get<SyntaxTrees>(tempTree.value).push_back(parseExpression(++pos, tokens));
                 break;
-                default: //unknown binary operation
+                default: //unknown binary operation, ignore
                 return tempTree;
             }
         } else if(tokens[pos].type == Lexer::Token::Sign){
