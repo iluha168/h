@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "parser.hh"
 #include "runner.hh"
 #include "../global/Global.hh"

@@ -2,6 +2,7 @@
 #include "runner.hh"
 #include <cwctype>
 #include <functional>
+#include <algorithm>
 
 namespace Lexer {
     //dont change order of elements in containers

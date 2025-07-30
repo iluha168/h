@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "HClass.hh"
 
 namespace H {

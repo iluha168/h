@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "runner.hh"
 #include "../lang/HClass.hh"
 
@@ -13,7 +14,7 @@ namespace Runner {
         std::wstring name;
         H::LObject& p = o;
         do name = getVariableName(o, variables)+L"."+name;
-        while (p = p->parent);
+        while ((p = p->parent));
         return name;
     }
     

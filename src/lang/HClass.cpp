@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "HClass.hh"
 #include "../script/runner.hh"
 
